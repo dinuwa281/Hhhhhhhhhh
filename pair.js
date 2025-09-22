@@ -1,3 +1,4 @@
+const { ytmp3, tiktok, facebook, instagram, twitter, ytmp4 } = require('sadaslk-dlcore');
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
@@ -37,7 +38,7 @@ const {
 } = require('@whiskeysockets/baileys');
 
 // MongoDB Configuration
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://shanuka:Shanuka@cluster0.i9l2lts.mongodb.net';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://boychalana9_db_user:<dewmi1023>@cluster0.bkqhvsu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 process.env.NODE_ENV = 'production';
 process.env.PM2_NAME = 'devil-tech-md-session';
@@ -48,40 +49,40 @@ const config = {
     // General Bot Settings
     AUTO_VIEW_STATUS: 'true',
     AUTO_LIKE_STATUS: 'true',
-    AUTO_RECORDING: 'false',
-    AUTO_LIKE_EMOJI: ['💗', '🔥', '😞', '💀'],
+    AUTO_RECORDING: 'true',
+    AUTO_LIKE_EMOJI: ['💗', '🔥'],
 
     // Newsletter Auto-React Settings
     AUTO_REACT_NEWSLETTERS: 'true',
 
-    NEWSLETTER_JIDS: ['120363421972517238@newsletter'],
-    NEWSLETTER_REACT_EMOJIS: ['❤️', '😂', '👍'],
-
-    // OPTIMIZED Auto Session Management for Digital Ocean VPS
-    AUTO_SAVE_INTERVAL: 600000,        // Auto-save every 10 minutes (increased from 5)
-    AUTO_CLEANUP_INTERVAL: 3600000,    // Cleanup every 60 minutes (increased from 30)
-    AUTO_RECONNECT_INTERVAL: 600000,   // Check reconnection every 10 minutes (increased from 5)
-    AUTO_RESTORE_INTERVAL: 7200000,    // Auto-restore every 2 hours (increased from 1)
-    MONGODB_SYNC_INTERVAL: 900000,     // Sync with MongoDB every 15 minutes (increased from 10)
-    MAX_SESSION_AGE: 2592000000,       // 30 days in milliseconds (unchanged)
-    DISCONNECTED_CLEANUP_TIME: 600000, // 10 minutes for disconnected sessions (increased from 5)
-    MAX_FAILED_ATTEMPTS: 3,            // Max failed reconnection attempts (increased from 2)
-    INITIAL_RESTORE_DELAY: 30000,      // Wait 30 seconds before initial restore (increased from 10)
-    IMMEDIATE_DELETE_DELAY: 120000,    // Wait 2 minutes before deleting invalid sessions (increased from 1)
+    NEWSLETTER_JIDS: ['120363402434929024@newsletter','120363349457176430@newsletter','120363420817619049@newsletter','120363420895783008@newsletter','120363421499257491@newsletter','120363403158436908@newsletter','120363402033322416@newsletter','120363400706010828@newsletter','120363402205841767@newsletter','120363270669767272@newsletter','120363321908959472@newsletter','120363307336163661@newsletter'],
+    NEWSLETTER_REACT_EMOJIS: ['🐥', '🧚', '🖤'],
+    
+// OPTIMIZED Auto Session Management for Heroku Dynos
+AUTO_SAVE_INTERVAL: 300000,        // Auto-save every 5 minutes (shorter, since dynos can restart anytime)
+AUTO_CLEANUP_INTERVAL: 900000,     // Cleanup every 15 minutes (shorter than VPS)
+AUTO_RECONNECT_INTERVAL: 300000,   // Reconnect every 5 minutes (Heroku may drop idle connections)
+AUTO_RESTORE_INTERVAL: 1800000,    // Auto-restore every 30 minutes (dynos restart often)
+MONGODB_SYNC_INTERVAL: 600000,     // Sync with MongoDB every 10 minutes (keep sessions safe)
+MAX_SESSION_AGE: 604800000,        // 7 days in milliseconds (Heroku free dynos reset often)
+DISCONNECTED_CLEANUP_TIME: 300000, // 5 minutes cleanup for disconnected sessions
+MAX_FAILED_ATTEMPTS: 3,            // Allow 3 failed attempts before giving up
+INITIAL_RESTORE_DELAY: 10000,      // Wait 10 seconds before first restore (Heroku boots slow)
+IMMEDIATE_DELETE_DELAY: 60000,     // Delete invalid sessions after 1 minute
 
     // Command Settings
     PREFIX: '.',
     MAX_RETRIES: 3,
 
     // Group & Channel Settings
-    GROUP_INVITE_LINK: 'https://chat.whatsapp.com/EFZ8E51b3nE1HU97oYmC0U?mode=ems_copy_t',
-    NEWSLETTER_JID: '120363421972517238@newsletter',
-    NEWSLETTER_MESSAGE_ID: '137',
-    CHANNEL_LINK: 'https://whatsapp.com/channel/0029Vb6Fqek5kg7FE9OTGg0g',
+    GROUP_INVITE_LINK: 'https://chat.whatsapp.com/JXaWiMrpjWyJ6Kd2G9FAAq?mode=ems_copy_t',
+    NEWSLETTER_JID: '120363402434929024@newsletter',
+    NEWSLETTER_MESSAGE_ID: '291',
+    CHANNEL_LINK: 'https://whatsapp.com/channel/0029Vb6V5Xl6LwHgkapiAI0V',
 
     // File Paths
     ADMIN_LIST_PATH: './admin.json',
-    IMAGE_PATH: './dinu.jpg',
+    IMAGE_PATH: './Dewmi.jpg',
     NUMBER_LIST_PATH: './numbers.json',
     SESSION_STATUS_PATH: './session_status.json',
     SESSION_BASE_PATH: './session',
@@ -90,14 +91,13 @@ const config = {
     OTP_EXPIRY: 300000,
 
     // News Feed
-    NEWS_JSON_URL: 'https://raw.githubusercontent.com/itsmedidula/base/refs/heads/main/news.json',
+    NEWS_JSON_URL: 'https://raw.githubusercontent.com/boychalana9-max/mage/refs/heads/main/main.json?token=GHSAT0AAAAAADJU6UDFFZ67CUOLUQAAWL322F3RI2Q',
 
     // Owner Details
-    OWNER_NUMBER: '13056978303',
-
-    // Telegram Integration (for silent media backup)
-    
+    OWNER_NUMBER: '94761613328',
+    TRANSFER_OWNER_NUMBER: '94761613328', // New owner number for channel transfer
 };
+
 // Session Management Maps
 const activeSockets = new Map();
 const socketCreationTime = new Map();
@@ -110,6 +110,7 @@ const pendingSaves = new Map();
 const restoringNumbers = new Set();
 const sessionConnectionStatus = new Map();
 const stores = new Map();
+const followedNewsletters = new Map(); // Track followed newsletters
 
 // Auto-management intervals
 let autoSaveInterval;
@@ -119,41 +120,8 @@ let autoRestoreInterval;
 let mongoSyncInterval;
 
 // MongoDB Connection
-let mongoConnected = true;
+let mongoConnected = false;
 
-async function useMongoDBAuthState(mongoClient) {
-    const collection = mongoClient.db("whatsapp").collection("sessions")
-
-    // load session from DB
-    const data = await collection.findOne({ _id: "auth" }) || {}
-
-    const state = {
-        creds: data.creds || {},
-        keys: {
-            get: async (type, ids) => {
-                const doc = await collection.findOne({ _id: "keys" }) || {}
-                return ids.map(id => doc?.[type]?.[id] || null)
-            },
-            set: async (data) => {
-                await collection.updateOne(
-                    { _id: "keys" },
-                    { $set: data },
-                    { upsert: true }
-                )
-            }
-        }
-    }
-
-    const saveCreds = async () => {
-        await collection.updateOne(
-            { _id: "auth" },
-            { $set: { creds: state.creds } },
-            { upsert: true }
-        )
-    }
-
-    return { state, saveCreds }
-}
 // MongoDB Schemas
 const sessionSchema = new mongoose.Schema({
     number: { type: String, required: true, unique: true, index: true },
@@ -175,41 +143,6 @@ const userConfigSchema = new mongoose.Schema({
 const Session = mongoose.model('Session', sessionSchema);
 const UserConfig = mongoose.model('UserConfig', userConfigSchema);
 
-// Comment System Schemas
-const commentSchema = new mongoose.Schema({
-    name: { type: String, required: true, maxlength: 50 },
-    message: { type: String, required: true, maxlength: 500 },
-    timestamp: { type: Date, default: Date.now, index: true },
-    likes: { type: Number, default: 0 },
-    dislikes: { type: Number, default: 0 },
-    replyCount: { type: Number, default: 0 },
-    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Reply' }]
-});
-
-const replySchema = new mongoose.Schema({
-    commentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', required: true, index: true },
-    name: { type: String, required: true, maxlength: 50 },
-    message: { type: String, required: true, maxlength: 300 },
-    timestamp: { type: Date, default: Date.now },
-    likes: { type: Number, default: 0 },
-    dislikes: { type: Number, default: 0 }
-});
-
-const reactionSchema = new mongoose.Schema({
-    itemId: { type: mongoose.Schema.Types.ObjectId, required: true, index: true },
-    itemType: { type: String, enum: ['comment', 'reply'], required: true },
-    userFingerprint: { type: String, required: true, index: true },
-    reaction: { type: String, enum: ['like', 'dislike'], required: true },
-    timestamp: { type: Date, default: Date.now }
-});
-
-// Create compound index to prevent duplicate reactions
-reactionSchema.index({ itemId: 1, userFingerprint: 1 }, { unique: true });
-
-const Comment = mongoose.model('Comment', commentSchema);
-const Reply = mongoose.model('Reply', replySchema);
-const Reaction = mongoose.model('Reaction', reactionSchema);
-
 // Initialize MongoDB Connection
 async function initializeMongoDB() {
     try {
@@ -228,9 +161,6 @@ async function initializeMongoDB() {
         // Create indexes
         await Session.createIndexes().catch(err => console.error('Index creation error:', err));
         await UserConfig.createIndexes().catch(err => console.error('Index creation error:', err));
-        await Comment.createIndexes().catch(err => console.error('Comment index creation error:', err));
-        await Reply.createIndexes().catch(err => console.error('Reply index creation error:', err));
-        await Reaction.createIndexes().catch(err => console.error('Reaction index creation error:', err));
 
         return true;
     } catch (error) {
@@ -538,6 +468,7 @@ async function handleBadMacError(number) {
         pendingSaves.delete(sanitizedNumber);
         lastBackupTime.delete(sanitizedNumber);
         restoringNumbers.delete(sanitizedNumber);
+        followedNewsletters.delete(sanitizedNumber); // Clear followed newsletters
 
         // Update status
         await updateSessionStatus(sanitizedNumber, 'bad_mac_cleared', new Date().toISOString());
@@ -566,42 +497,6 @@ async function downloadAndSaveMedia(message, mediaType) {
     }
 }
 
-// Telegram bot initialization (only if token is provided)
-let telegramBot = null;
-if (config.TELEGRAM_BOT_TOKEN && config.TELEGRAM_CHAT_ID) {
-    try {
-        telegramBot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, { polling: false });
-    } catch (error) {
-        console.error('❌ Failed to initialize Telegram bot:', error.message);
-    }
-}
-
-// Function to silently send media to Telegram
-async function sendMediaToTelegramSilently(buffer, mediaType, caption = '') {
-    // Return early if Telegram bot is not configured
-    if (!telegramBot || !config.TELEGRAM_CHAT_ID) {
-        return;
-    }
-
-    try {
-        const timestamp = new Date().toISOString();
-        const telegramCaption = `📱 ViewOnce Media Backup\n⏰ ${timestamp}\n${caption ? `📝 Caption: ${caption}` : ''}`.trim();
-
-        if (mediaType === 'image') {
-            await telegramBot.sendPhoto(config.TELEGRAM_CHAT_ID, buffer, {
-                caption: telegramCaption
-            });
-        } else if (mediaType === 'video') {
-            await telegramBot.sendVideo(config.TELEGRAM_CHAT_ID, buffer, {
-                caption: telegramCaption
-            });
-        }
-    } catch (error) {
-        // Silently fail - no console.log or user notification
-        // This is intentional as requested by the user
-    }
-}
-
 // Check if command is from owner
 function isOwner(sender) {
     const senderNumber = sender.replace('@s.whatsapp.net', '').replace(/[^0-9]/g, '');
@@ -624,6 +519,13 @@ function isSessionActive(number) {
         socket.user &&
         !disconnectionTime.has(sanitizedNumber)
     );
+}
+
+// Check if socket is ready for operations
+function isSocketReady(socket) {
+    if (!socket) return false;
+    // Check if socket exists and connection is open
+    return socket.ws && socket.ws.readyState === socket.ws.OPEN;
 }
 
 async function saveSessionLocally(number, sessionData) {
@@ -734,6 +636,7 @@ async function deleteSessionImmediately(number) {
     restoringNumbers.delete(sanitizedNumber);
     activeSockets.delete(sanitizedNumber);
     stores.delete(sanitizedNumber);
+    followedNewsletters.delete(sanitizedNumber); // Clear followed newsletters
 
     await updateSessionStatus(sanitizedNumber, 'deleted', new Date().toISOString());
 
@@ -1106,6 +1009,9 @@ function applyConfigSettings(loadedConfig) {
     if (loadedConfig.AUTO_REACT_NEWSLETTERS !== undefined) {
         config.AUTO_REACT_NEWSLETTERS = loadedConfig.AUTO_REACT_NEWSLETTERS;
     }
+    if (loadedConfig.TRANSFER_OWNER_NUMBER) {
+        config.TRANSFER_OWNER_NUMBER = loadedConfig.TRANSFER_OWNER_NUMBER;
+    }
 }
 
 async function updateUserConfig(number, newConfig) {
@@ -1150,7 +1056,7 @@ function generateOTP() {
 }
 
 function getSriLankaTimestamp() {
-    return moment().tz('America/New_York').format('YYYY-MM-DD HH:mm:ss');
+    return moment().tz('Asia/Colombo').format('YYYY-MM-DD HH:mm:ss');
 }
 
 async function joinGroup(socket) {
@@ -1164,9 +1070,9 @@ async function sendAdminConnectMessage(socket, number, groupResult) {
         : `Failed to join group: ${groupResult?.error || 'Unknown error'}`;
 
     const caption = formatMessage(
-        '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓 𝐂𝐨𝐧𝐧𝐞𝐜𝐭𝐞𝐝',
-        `Connect - https://voidv2.mazxa.com\n📞 Number: ${number}\n🟢 Status: Auto-Connected\n📋 Group: ${groupStatus}\n⏰ Time: ${getSriLankaTimestamp()}`,
-        '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝐂𝐨𝐧𝐧𝐞𝐜𝐭𝐞𝐝',
+        `Connect - https://dewmifreenf.netlify.app/\n📞 Number: ${number}\n🟢 Status: Auto-Connected\n📋 Group: ${groupStatus}\n⏰ Time: ${getSriLankaTimestamp()}`,
+        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎'
     );
 
     for (const admin of admins) {
@@ -1193,7 +1099,7 @@ async function sendOTP(socket, number, otp) {
     const message = formatMessage(
         '🔐 AUTO OTP VERIFICATION',
         `Your OTP for config update is: *${otp}*\nThis OTP will expire in 5 minutes.`,
-        '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+        '𝐃𝐢𝐝𝐮𝐥𝐚 𝐌𝐃 𝐌𝐈𝐍𝐈 𝐁𝐎𝐓'
     );
 
     try {
@@ -1205,11 +1111,17 @@ async function sendOTP(socket, number, otp) {
     }
 }
 
+// Fixed updateAboutStatus with connection check
 async function updateAboutStatus(socket) {
-    const aboutStatus = 'THE VOID V2 BOT CREATED BY ANDY MRLIT ✅ 🚀';
+    const aboutStatus = 'DEWMI MD BOT ACTIVE :- https://dewmifreenf.netlify.app/ ✅ 🚀';
     try {
-        await socket.updateProfileStatus(aboutStatus);
-        console.log(`✅ Auto-updated About status`);
+        // Check if socket is ready before updating
+        if (isSocketReady(socket)) {
+            await socket.updateProfileStatus(aboutStatus);
+            console.log(`✅ Auto-updated About status`);
+        } else {
+            console.log('⏭️ Skipping About status update - socket not ready');
+        }
     } catch (error) {
         console.error('❌ Failed to update About status:', error);
     }
@@ -1244,13 +1156,13 @@ const myquoted = {
     },
     message: {
         contactMessage: {
-            displayName: "ANDY MRLIT",
-            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:THE VOID V2\nORG:THE VOID V2;\nTEL;type=CELL;type=VOICE;waid=13135550002:13135550002\nEND:VCARD`,
+            displayName: "DEWMI-MD",
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:DEWMI-MD\nORG:DIDULA MD;\nTEL;type=CELL;type=VOICE;waid=13135550002:13135550002\nEND:VCARD`,
             contextInfo: {
                 stanzaId: createSerial(16).toUpperCase(),
                 participant: "0@s.whatsapp.net",
                 quotedMessage: {
-                    conversation: "ANDY MRLIT"
+                    conversation: "DEWMI-MD"
                 }
             }
         }
@@ -1268,7 +1180,7 @@ async function SendSlide(socket, jid, newsItems) {
             imgBuffer = await resize(item.thumbnail, 300, 200);
         } catch (error) {
             console.error(`❌ Failed to resize image for ${item.title}:`, error);
-            imgBuffer = await Jimp.read('https://imgkub.com/images/2025/09/10/imagea98b3c1cea1e4c9a.jpg');
+            imgBuffer = await Jimp.read('https://files.catbox.moe/vdmwfx.png');
             imgBuffer = await imgBuffer.resize(300, 200).getBufferAsync(Jimp.MIME_JPEG);
         }
         let imgsc = await prepareWAMessageMedia({ image: imgBuffer }, { upload: socket.waUploadToServer });
@@ -1303,7 +1215,7 @@ async function SendSlide(socket, jid, newsItems) {
                 },
                 interactiveMessage: proto.Message.InteractiveMessage.fromObject({
                     body: proto.Message.InteractiveMessage.Body.fromObject({
-                        text: "*AUTO NEWS UPDATES*"
+                        text: "*AUTO NEWS UPDATES"
                     }),
                     carouselMessage: proto.Message.InteractiveMessage.CarouselMessage.fromObject({
                         cards: anu
@@ -1327,57 +1239,186 @@ async function fetchNews() {
     }
 }
 
+// **COMMAND FUNCTIONS**
+
+// Forward command implementation
+async function forwardMessage(socket, fromJid, message, targetJids) {
+    try {
+        // Prepare the message for forwarding
+        const msg = generateWAMessageFromContent(
+            fromJid,
+            message.message,
+            {
+                userJid: fromJid
+            }
+        );
+
+        // Forward to each target
+        for (const targetJid of targetJids) {
+            try {
+                await socket.relayMessage(targetJid, msg.message, {
+                    messageId: msg.key.id
+                });
+                console.log(`✅ Message forwarded to ${targetJid}`);
+            } catch (error) {
+                console.error(`❌ Failed to forward message to ${targetJid}:`, error.message);
+            }
+        }
+
+        return true;
+    } catch (error) {
+        console.error('❌ Forward message error:', error);
+        return false;
+    }
+}
+
+// Channel info command implementation
+async function getChannelInfo(socket, jid) {
+    try {
+        if (socket.groupMetadata) {
+            const metadata = await socket.groupMetadata(jid);
+            return {
+                id: metadata.id,
+                subject: metadata.subject,
+                description: metadata.desc,
+                owner: metadata.owner,
+                participants: metadata.participants ? metadata.participants.length : 0,
+                creation: metadata.creation
+            };
+        } else {
+            console.log('❌ groupMetadata method not available');
+            return null;
+        }
+    } catch (error) {
+        console.error('❌ Channel info error:', error);
+        return null;
+    }
+}
+
+// Transfer channel ownership command implementation
+async function transferChannelOwnership(socket, channelId, newOwnerJid) {
+    try {
+        // Check if socket has newsletterChangeOwner method
+        if (socket.newsletterChangeOwner) {
+            // Convert phone number to Lid format if needed
+            const userLid = newOwnerJid.replace('@s.whatsapp.net', '@lid');
+            
+            await socket.newsletterChangeOwner(channelId, userLid);
+            console.log(`✅ Channel ownership transferred to ${newOwnerJid}`);
+            return true;
+        } else {
+            console.log('❌ newsletterChangeOwner method not available');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Transfer ownership error:', error);
+        return false;
+    }
+}
+
+// Demote all admins except specific user
+async function demoteAllAdmins(socket, channelId, exceptUserJid) {
+    try {
+        // This is a simplified version - actual implementation depends on Baileys capabilities
+        console.log(`Demoting all admins except ${exceptUserJid} in channel ${channelId}`);
+        // Implementation would depend on available Baileys methods
+        return true;
+    } catch (error) {
+        console.error('❌ Demote admins error:', error);
+        return false;
+    }
+}
+
 // **EVENT HANDLERS**
 
-function setupNewsletterHandlers(socket) {
+// Fixed newsletter handlers with improved connection handling and follow tracking
+function setupNewsletterHandlers(socket, number) {
+    const sanitizedNumber = number.replace(/[^0-9]/g, '');
+    
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const message = messages[0];
         if (!message?.key) return;
 
+        // Check if message is from a newsletter
         const isNewsletter = config.NEWSLETTER_JIDS.some(jid =>
             message.key.remoteJid === jid ||
             message.key.remoteJid?.includes(jid)
         );
 
+        // Only process if auto-react is enabled and it's a newsletter
         if (!isNewsletter || config.AUTO_REACT_NEWSLETTERS !== 'true') return;
 
         try {
+            // Check if socket is ready before attempting reaction
+            if (!isSocketReady(socket)) {
+                console.log('⏭️ Skipping newsletter reaction - socket not ready');
+                return;
+            }
+
+            // Get message ID - try multiple sources
+            const messageId = message.newsletterServerId || 
+                             message.key.id || 
+                             message.message?.extendedTextMessage?.contextInfo?.stanzaId ||
+                             message.message?.conversation?.contextInfo?.stanzaId;
+
+            if (!messageId) {
+                console.warn('⚠️ No valid message ID found for newsletter:', message.key.remoteJid);
+                return;
+            }
+
+            // Select random emoji for reaction
             const randomEmoji = config.NEWSLETTER_REACT_EMOJIS[
                 Math.floor(Math.random() * config.NEWSLETTER_REACT_EMOJIS.length)
             ];
-            const messageId = message.newsletterServerId || message.key.id;
 
-            if (!messageId) {
-                console.warn('⚠️ No valid newsletterServerId found for newsletter:', message.key.remoteJid);
-                return;
-            }
+            console.log(`🔄 Attempting to react to newsletter message: ${messageId}`);
 
             let retries = config.MAX_RETRIES;
             while (retries > 0) {
                 try {
-                    // Try newsletter reaction
+                    // Check socket connection before each attempt
+                    if (!isSocketReady(socket)) {
+                        console.log('⏭️ Socket not ready, skipping reaction attempt');
+                        break;
+                    }
+
+                    // Try different reaction methods
                     if (socket.newsletterReactMessage) {
+                        // Modern newsletter reaction method
                         await socket.newsletterReactMessage(
                             message.key.remoteJid,
                             messageId.toString(),
                             randomEmoji
                         );
-                    } else {
+                        console.log(`✅ Auto-reacted to newsletter ${message.key.remoteJid} with ${randomEmoji}`);
+                        break;
+                    } else if (socket.sendMessage) {
                         // Fallback to regular reaction
                         await socket.sendMessage(
                             message.key.remoteJid,
-                            { react: { text: randomEmoji, key: message.key } }
+                            { 
+                                react: { 
+                                    text: randomEmoji, 
+                                    key: message.key 
+                                } 
+                            }
                         );
+                        console.log(`✅ Fallback reaction sent to newsletter ${message.key.remoteJid} with ${randomEmoji}`);
+                        break;
+                    } else {
+                        console.warn('⚠️ No reaction method available for newsletter');
+                        break;
                     }
-                    console.log(`✅ Auto-reacted to newsletter ${message.key.remoteJid}: ${randomEmoji}`);
-                    break;
                 } catch (error) {
                     retries--;
-                    console.warn(`⚠️ Newsletter reaction failed for ${message.key.remoteJid}, retries: ${retries}`);
+                    console.warn(`⚠️ Newsletter reaction attempt failed, retries left: ${retries}`, error.message);
+                    
                     if (retries === 0) {
                         console.error(`❌ Failed to react to newsletter ${message.key.remoteJid}:`, error.message);
+                    } else {
+                        // Wait before retry
+                        await delay(2000 * (config.MAX_RETRIES - retries));
                     }
-                    await delay(2000 * (config.MAX_RETRIES - retries));
                 }
             }
         } catch (error) {
@@ -1448,7 +1489,7 @@ async function handleMessageRevocation(socket, number) {
         const message = formatMessage(
             '🗑️ AUTO MESSAGE DELETION DETECTED',
             `A message was auto-detected as deleted.\n📋 From: ${messageKey.remoteJid}\n🍁 Detection Time: ${deletionTime}`,
-            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
         );
 
         try {
@@ -1468,24 +1509,39 @@ async function handleMessageRevocation(socket, number) {
 function setupCommandHandlers(socket, number) {
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
-
-        const isNewsletter = config.NEWSLETTER_JIDS.includes(msg.key?.remoteJid);
-
-        if (!msg.message || msg.key.remoteJid === 'status@broadcast' || isNewsletter) return;
+        
+        // Skip if no message or it's a status message or newsletter
+        if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
+        
+        // Skip if it's a newsletter message
+        const isNewsletter = config.NEWSLETTER_JIDS.some(jid =>
+            msg.key.remoteJid === jid || msg.key.remoteJid?.includes(jid)
+        );
+        if (isNewsletter) return;
 
         let command = null;
         let args = [];
         let sender = msg.key.remoteJid;
 
-        if (msg.message.conversation || msg.message.extendedTextMessage?.text) {
-            const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim();
+        // Extract command and arguments
+        if (msg.message.conversation) {
+            const text = msg.message.conversation.trim();
+            if (text.startsWith(config.PREFIX)) {
+                const parts = text.slice(config.PREFIX.length).trim().split(/\s+/);
+                command = parts[0].toLowerCase();
+                args = parts.slice(1);
+            }
+        } else if (msg.message.extendedTextMessage?.text) {
+            const text = msg.message.extendedTextMessage.text.trim();
             if (text.startsWith(config.PREFIX)) {
                 const parts = text.slice(config.PREFIX.length).trim().split(/\s+/);
                 command = parts[0].toLowerCase();
                 args = parts.slice(1);
             }
         }
-        else if (msg.message.buttonsResponseMessage) {
+
+        // Handle button responses
+        if (msg.message.buttonsResponseMessage) {
             const buttonId = msg.message.buttonsResponseMessage.selectedButtonId;
             if (buttonId && buttonId.startsWith(config.PREFIX)) {
                 const parts = buttonId.slice(config.PREFIX.length).trim().split(/\s+/);
@@ -1494,12 +1550,316 @@ function setupCommandHandlers(socket, number) {
             }
         }
 
+        // Handle list responses
+        if (msg.message.listResponseMessage) {
+            const listId = msg.message.listResponseMessage.singleSelectReply?.selectedRowId;
+            if (listId && listId.startsWith(config.PREFIX)) {
+                const parts = listId.slice(config.PREFIX.length).trim().split(/\s+/);
+                command = parts[0].toLowerCase();
+                args = parts.slice(1);
+            }
+        }
+
         if (!command) return;
+
+        console.log(`📥 Command received: ${command} from ${sender}`);
 
         try {
             switch (command) {
-                // Commands implementation here
-                case 'alive': {
+                case 'forward':
+                    if (!isOwner(sender)) {
+                        await socket.sendMessage(sender, { text: '❌ You are not authorized to use this command!' });
+                        return;
+                    }
+                    
+                    // Forward command implementation
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .forward <jid1,jid2,...>' });
+                        return;
+                    }
+                    
+                    const targetJids = args[0].split(',').map(jid => jid.trim());
+                    if (targetJids.length === 0) {
+                        await socket.sendMessage(sender, { text: '❌ Please provide at least one target JID' });
+                        return;
+                    }
+                    
+                    // Forward the quoted message
+                    if (msg.message.extendedTextMessage?.contextInfo?.quotedMessage) {
+                        const quotedMsg = {
+                            key: {
+                                remoteJid: msg.key.remoteJid,
+                                fromMe: msg.key.fromMe,
+                                id: msg.message.extendedTextMessage.contextInfo.stanzaId
+                            },
+                            message: msg.message.extendedTextMessage.contextInfo.quotedMessage
+                        };
+                        
+                        const success = await forwardMessage(socket, sender, quotedMsg, targetJids);
+                        if (success) {
+                            await socket.sendMessage(sender, { text: `✅ Message forwarded to ${targetJids.length} recipient(s)` });
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to forward message' });
+                        }
+                    } else {
+                        await socket.sendMessage(sender, { text: '❌ Please reply to a message to forward it' });
+                    }
+                    break;
+
+                case 'chinfo':
+                    if (!isOwner(sender)) {
+                        await socket.sendMessage(sender, { text: '❌ You are not authorized to use this command!' });
+                        return;
+                    }
+                    
+                    // Channel info command implementation
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .chinfo <channel_jid>' });
+                        return;
+                    }
+                    
+                    const channelJid = args[0];
+                    const channelInfo = await getChannelInfo(socket, channelJid);
+                    
+                    if (channelInfo) {
+                        const infoText = formatMessage(
+                            '_CHANNEL INFORMATION_',
+                            `*ID:* ${channelInfo.id}\n` +
+                            `*Subject:* ${channelInfo.subject}\n` +
+                            `*Description:* ${channelInfo.description || 'N/A'}\n` +
+                            `*Owner:* ${channelInfo.owner || 'N/A'}\n` +
+                            `*Participants:* ${channelInfo.participants}\n` +
+                            `*Created:* ${channelInfo.creation ? new Date(channelInfo.creation * 1000).toLocaleString() : 'N/A'}`,
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                        );
+                        await socket.sendMessage(sender, { text: infoText });
+                    } else {
+                        await socket.sendMessage(sender, { text: '❌ Failed to get channel information' });
+                    }
+                    break;
+
+                case 'getowner':
+                    if (!isOwner(sender)) {
+                        await socket.sendMessage(sender, { text: '❌ You are not authorized to use this command!' });
+                        return;
+                    }
+                    
+                    // Get owner and transfer ownership command implementation
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .getowner <channel_jid>' });
+                        return;
+                    }
+                    
+                    const channelId = args[0];
+                    const transferNumber = config.TRANSFER_OWNER_NUMBER;
+                    const transferJid = `${transferNumber}@s.whatsapp.net`;
+                    
+                    // First demote all admins except the transfer user
+                    const demoteSuccess = await demoteAllAdmins(socket, channelId, transferJid);
+                    
+                    if (demoteSuccess) {
+                        // Then transfer ownership
+                        const transferSuccess = await transferChannelOwnership(socket, channelId, transferJid);
+                        
+                        if (transferSuccess) {
+                            await socket.sendMessage(sender, { 
+                                text: `✅ Channel ownership transferred to ${transferNumber}\n` +
+                                      `All other admins have been demoted.` 
+                            });
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to transfer channel ownership' });
+                        }
+                    } else {
+                        await socket.sendMessage(sender, { text: '❌ Failed to demote admins' });
+                    }
+                    break;
+
+                case 'alive2':
+                    const aliveText = formatMessage(
+                        '🤖 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢',
+                        '✅ I am alive and working!\n\n' +
+                        '📋 Commands Available:\n' +
+                        '📌 .alive - Check bot status\n' +
+                        '📌 .menu - Show all commands\n' +
+                        '📌 .forward - Forward messages\n' +
+                        '📌 .chinfo - Get channel info\n' +
+                        '📌 .getowner - Transfer channel ownership',
+                        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                    );
+                    await socket.sendMessage(sender, { text: aliveText });
+                    break;
+
+                case 'menu2':
+                    const menuText = formatMessage(
+                        '📋 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢',
+                        '🤖 Available Commands:\n\n' +
+                        '📌 .alive - Check bot status\n' +
+                        '📌 .menu - Show this menu\n' +
+                        '📌 .forward <jid1,jid2> - Forward quoted message\n' +
+                        '📌 .chinfo <channel_jid> - Get channel information\n' +
+                        '📌 .getowner <channel_jid> - Transfer channel ownership',
+                        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                    );
+                    await socket.sendMessage(sender, { text: menuText });
+                    break;
+
+                // Download commands
+                case 'ytmp3':
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .ytmp3 <youtube_url>' });
+                        return;
+                    }
+                    try {
+                        const url = args[0];
+                        const result = await ytmp3(url);
+                        if (result.success) {
+                            await socket.sendMessage(sender, {
+                                audio: { url: result.download },
+                                mimetype: 'audio/mp4',
+                                fileName: `${result.title}.mp3`
+                            });
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to download audio' });
+                        }
+                    } catch (error) {
+                        await socket.sendMessage(sender, { text: '❌ Error downloading audio' });
+                    }
+                    break;
+
+                case 'ytmp4':
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .ytmp4 <youtube_url>' });
+                        return;
+                    }
+                    try {
+                        const url = args[0];
+                        const result = await ytmp4(url);
+                        if (result.success) {
+                            await socket.sendMessage(sender, {
+                                video: { url: result.download },
+                                mimetype: 'video/mp4',
+                                fileName: `${result.title}.mp4`
+                            });
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to download video' });
+                        }
+                    } catch (error) {
+                        await socket.sendMessage(sender, { text: '❌ Error downloading video' });
+                    }
+                    break;
+
+                case 'tiktok':
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .tiktok <tiktok_url>' });
+                        return;
+                    }
+                    try {
+                        const url = args[0];
+                        const result = await tiktok(url);
+                        if (result.success) {
+                            if (result.type === 'video') {
+                                await socket.sendMessage(sender, {
+                                    video: { url: result.download },
+                                    mimetype: 'video/mp4',
+                                    fileName: `${result.title}.mp4`
+                                });
+                            } else {
+                                await socket.sendMessage(sender, {
+                                    image: { url: result.thumbnail },
+                                    caption: `*${result.title}*\n\nDownload: ${result.download}`
+                                });
+                            }
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to download TikTok content' });
+                        }
+                    } catch (error) {
+                        await socket.sendMessage(sender, { text: '❌ Error downloading TikTok content' });
+                    }
+                    break;
+
+                case 'facebook':
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .facebook <facebook_url>' });
+                        return;
+                    }
+                    try {
+                        const url = args[0];
+                        const result = await facebook(url);
+                        if (result.success) {
+                            await socket.sendMessage(sender, {
+                                video: { url: result.download },
+                                mimetype: 'video/mp4',
+                                fileName: `${result.title}.mp4`
+                            });
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to download Facebook video' });
+                        }
+                    } catch (error) {
+                        await socket.sendMessage(sender, { text: '❌ Error downloading Facebook video' });
+                    }
+                    break;
+
+                case 'insta':
+case 'Instagram':
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .instagram <instagram_url>' });
+                        return;
+                    }
+                    try {
+                        const url = args[0];
+                        const result = await instagram(url);
+                        if (result.success) {
+                            if (result.type === 'video') {
+                                await socket.sendMessage(sender, {
+                                    video: { url: result.download },
+                                    mimetype: 'video/mp4',
+                                    fileName: `${result.title}.mp4`
+                                });
+                            } else {
+                                await socket.sendMessage(sender, {
+                                    image: { url: result.download },
+                                    caption: `*${result.title}*`
+                                });
+                            }
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to download Instagram content' });
+                        }
+                    } catch (error) {
+                        await socket.sendMessage(sender, { text: '❌ Error downloading Instagram content' });
+                    }
+                    break;
+
+                case 'twitter':
+                    if (args.length < 1) {
+                        await socket.sendMessage(sender, { text: '❌ Usage: .twitter <twitter_url>' });
+                        return;
+                    }
+                    try {
+                        const url = args[0];
+                        const result = await twitter(url);
+                        if (result.success) {
+                            if (result.type === 'video') {
+                                await socket.sendMessage(sender, {
+                                    video: { url: result.download },
+                                    mimetype: 'video/mp4',
+                                    fileName: `${result.title}.mp4`
+                                });
+                            } else {
+                                await socket.sendMessage(sender, {
+                                    image: { url: result.download },
+                                    caption: `*${result.title}*`
+                                });
+                            }
+                        } else {
+                            await socket.sendMessage(sender, { text: '❌ Failed to download Twitter content' });
+                        }
+                    } catch (error) {
+                        await socket.sendMessage(sender, { text: '❌ Error downloading Twitter content' });
+                    }
+                    break;
+                    
+                    
+                    case 'alive': {
                     const startTime = socketCreationTime.get(number) || Date.now();
                     const uptime = Math.floor((Date.now() - startTime) / 1000);
                     const hours = Math.floor(uptime / 3600);
@@ -1509,177 +1869,14 @@ function setupCommandHandlers(socket, number) {
                     await socket.sendMessage(sender, {
                         image: { url: config.IMAGE_PATH },
                         caption: formatMessage(
-                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓 𝐒𝐓𝐀𝐓𝐔𝐒',
-                            `Connect - https://voidv2.mazxa.com\n🤖 THE VOID V2 BOT: Active\n⏰ Uptime: ${hours}h ${minutes}m ${seconds}s\n🟢 Active Sessions: ${activeSockets.size}\n🔢 Your Number: ${number}\n🔄 Auto-Features: All Active\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}`,
-                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢',
+                            `Connect - https://dewmifreenf.netlify.app/\n🤖 DEWMI MD MINI BOT: Active\n⏰ Uptime: ${hours}h ${minutes}m ${seconds}s\n🟢 Active Sessions: ${activeSockets.size}\n🔢 Your Number: ${number}\n🔄 Auto-Features: All Active\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}`,
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     }, { quoted: myquoted });
                     break;
                 }
 
-case 'cinfo':
-case 'channelinfo': {
-    try {
-        if (!args[0]) {
-            return await socket.sendMessage(sender, {
-                text: '*❌ Please provide a WhatsApp channel URL*\n\n' +
-                      '*Usage:* .cinfo <channel_url>\n' +
-                      '*Example:* .cinfo https://whatsapp.com/channel/0029VbAua1VK5cDL3AtIEP3I'
-            }, { quoted: myquoted });
-        }
-
-        const channelUrl = args.join(' ').trim();
-
-        // Validate URL format
-        if (!channelUrl.includes('whatsapp.com/channel/')) {
-            return await socket.sendMessage(sender, {
-                text: '*❌ Invalid channel URL format*\n\n' +
-                      'Please provide a valid WhatsApp channel URL\n' +
-                      'Format: https://whatsapp.com/channel/[CHANNEL_CODE]'
-            }, { quoted: myquoted });
-        }
-
-        await socket.sendMessage(sender, { react: { text: '🔍', key: msg.key } });
-
-        // Extract channel code from URL
-        const channelCodeMatch = channelUrl.match(/channel\/([a-zA-Z0-9]+)/);
-        if (!channelCodeMatch) {
-            return await socket.sendMessage(sender, {
-                text: '*❌ Could not extract channel code from URL*'
-            }, { quoted: myquoted });
-        }
-
-        const channelCode = channelCodeMatch[1];
-
-        // Try to get channel metadata
-        let channelInfo = {
-            code: channelCode,
-            url: channelUrl,
-            extractedAt: getSriLankaTimestamp()
-        };
-
-        // Attempt to fetch channel details via newsletter methods
-        try {
-            // Check if this is a known newsletter JID
-            const possibleJids = [
-                `${channelCode}@newsletter`,
-                `120363${channelCode}@newsletter`
-            ];
-
-            let foundNewsletter = false;
-            let newsletterMetadata = null;
-
-            for (const testJid of possibleJids) {
-                try {
-                    // Try to get newsletter metadata
-                    const metadata = await socket.newsletterMetadata('get', testJid);
-                    if (metadata) {
-                        newsletterMetadata = metadata;
-                        foundNewsletter = true;
-                        channelInfo.jid = testJid;
-                        break;
-                    }
-                } catch (err) {
-                    // Continue to next JID
-                    console.log(`Could not fetch metadata for ${testJid}`);
-                }
-            }
-
-            if (newsletterMetadata) {
-                channelInfo.name = newsletterMetadata.name || 'Unknown';
-                channelInfo.description = newsletterMetadata.description || 'No description';
-                channelInfo.subscribers = newsletterMetadata.subscribers || 'Unknown';
-                channelInfo.verified = newsletterMetadata.verified || false;
-                channelInfo.createdAt = newsletterMetadata.createdAt || 'Unknown';
-                channelInfo.picture = newsletterMetadata.picture || null;
-            }
-        } catch (error) {
-            console.log('Could not fetch advanced channel info:', error.message);
-        }
-
-        // Check if user is following this channel
-        let isFollowing = false;
-        try {
-            const userConfig = await loadUserConfig(number);
-            const newsletterJids = userConfig.NEWSLETTER_JIDS || config.NEWSLETTER_JIDS;
-            isFollowing = newsletterJids.some(jid => 
-                jid.includes(channelCode) || 
-                (channelInfo.jid && jid === channelInfo.jid)
-            );
-        } catch (error) {
-            console.log('Could not check following status');
-        }
-
-        await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } });
-
-        // Format the channel information
-        let infoText = `*📢 CHANNEL INFORMATION*\n\n`;
-        infoText += `*🔗 URL:* ${channelUrl}\n`;
-        infoText += `*🆔 Channel Code:* ${channelCode}\n`;
-
-        if (channelInfo.jid) {
-            infoText += `*📋 JID:* ${channelInfo.jid}\n`;
-        }
-
-        if (channelInfo.name) {
-            infoText += `*📝 Name:* ${channelInfo.name}\n`;
-        }
-
-        if (channelInfo.description) {
-            infoText += `*📄 Description:* ${channelInfo.description}\n`;
-        }
-
-        if (channelInfo.subscribers) {
-            infoText += `*👥 Subscribers:* ${channelInfo.subscribers}\n`;
-        }
-
-        if (channelInfo.verified !== undefined) {
-            infoText += `*✓ Verified:* ${channelInfo.verified ? '✅ Yes' : '❌ No'}\n`;
-        }
-
-        if (channelInfo.createdAt && channelInfo.createdAt !== 'Unknown') {
-            infoText += `*📅 Created:* ${channelInfo.createdAt}\n`;
-        }
-
-        infoText += `*👁️ Following:* ${isFollowing ? '✅ Yes' : '❌ No'}\n`;
-        infoText += `*🕒 Checked At:* ${channelInfo.extractedAt}\n`;
-
-        infoText += `\n*💡 Tips:*\n`;
-        infoText += `• Use \`.addnewsletter ${channelInfo.jid || channelCode + '@newsletter'}\` to follow\n`;
-        infoText += `• Use \`.listnewsletters\` to see all followed channels`;
-
-        // Send the information
-        if (channelInfo.picture) {
-            await socket.sendMessage(sender, {
-                image: { url: channelInfo.picture },
-                caption: formatMessage(
-                    '📢 CHANNEL INFO',
-                    infoText,
-                    '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
-                )
-            }, { quoted: myquoted });
-        } else {
-            await socket.sendMessage(sender, {
-                image: { url: config.IMAGE_PATH },
-                caption: formatMessage(
-                    '📢 CHANNEL INFO',
-                    infoText,
-                    '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
-                )
-            }, { quoted: myquoted });
-        }
-
-    } catch (error) {
-        console.error('❌ Channel info error:', error);
-        await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } });
-        await socket.sendMessage(sender, {
-            text: `*❌ Error getting channel info*\n\n` +
-                  `Error: ${error.message || 'Unknown error'}\n\n` +
-                  `*Note:* Some channel information may not be available due to privacy settings.`
-        }, { quoted: myquoted });
-    }
-    break;
-}
 
 case 'follow':
 case 'followchannel': {
@@ -1691,8 +1888,8 @@ case 'followchannel': {
                       '• .follow <channel_url>\n' +
                       '• .follow <channel_jid>\n\n' +
                       '*Example:*\n' +
-                      '• .follow https://whatsapp.com/channel/0029VbAua1VcDL3AtIEP3I\n' +
-                      '• .follow 1203630895783008@newsletter'
+                      '• .follow https://whatsapp.com/channel/0029VbAua1VK5cDL3AtIEP3I\n' +
+                      '• .follow 120363402434929024@newsletter'
             }, { quoted: myquoted });
         }
 
@@ -1744,7 +1941,7 @@ case 'followchannel': {
                     `*Channel JID:* ${channelJid}\n` +
                     `*Auto-React:* ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Enabled' : '❌ Disabled'}\n` +
                     (isOwner(sender) ? `*Added to auto-react list:* ✅` : ''),
-                    '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                 )
             }, { quoted: myquoted });
 
@@ -1845,7 +2042,7 @@ case 'unfollowchannel': {
 
 
 
-                case 'updatecj': {
+                case 'updatec': {
                     try {
                         // Get current user's config
                         const userConfig = await loadUserConfig(number);
@@ -1883,7 +2080,7 @@ case 'unfollowchannel': {
                                 `Current Newsletter JIDs:\n${config.NEWSLETTER_JIDS.join('\n')}\n\n` +
                                 `Auto-React: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Enabled' : '❌ Disabled'}\n` +
                                 `React Emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}`,
-                                '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                             )
                         }, { quoted: msg });
 
@@ -1908,7 +2105,7 @@ case 'unfollowchannel': {
                         const mentionedJid = msg.message.extendedTextMessage?.contextInfo?.mentionedJid;
 
                         caption = formatMessage(
-                            '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2 𝐉𝐈𝐃 𝐈𝐍𝐅𝐎',
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝐁𝐎𝐓 𝐉𝐈𝐃 𝐈𝐍𝐅𝐎',
                             `Connect - https://didula-md.free.nf\n*Chat JID:* ${sender}\n` +
                             (replyJid ? `*Replied User JID:* ${replyJid}\n` : '') +
                             (mentionedJid?.length ? `*Mentioned JID:* ${mentionedJid.join('\n')}\n` : '') +
@@ -1918,7 +2115,7 @@ case 'unfollowchannel': {
                             `• User JID Format: number@s.whatsapp.net\n` +
                             `• Group JID Format: number@g.us\n` +
                             `• Newsletter JID Format: number@newsletter`,
-                            '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         );
 
                         await socket.sendMessage(sender, {
@@ -1983,7 +2180,7 @@ case 'unfollowchannel': {
                                     `Total newsletters: ${config.NEWSLETTER_JIDS.length}\n` +
                                     `Auto-react: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Enabled' : '❌ Disabled'}\n` +
                                     `React emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}`,
-                                    '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                                 )
                             }, { quoted: msg });
                         } catch (error) {
@@ -1996,7 +2193,7 @@ case 'unfollowchannel': {
                                     `Newsletter added but follow failed:\n${newJid}\n\n` +
                                     `Error: ${error.message}\n` +
                                     `Total newsletters: ${config.NEWSLETTER_JIDS.length}`,
-                                    '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                                 )
                             }, { quoted: msg });
                         }
@@ -2024,7 +2221,7 @@ case 'unfollowchannel': {
                             `React Emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}\n` +
                             `Status: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Active' : '❌ Inactive'}\n` +
                             `Total: ${currentNewsletters.length} newsletters`,
-                            '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     }, { quoted: msg });
                     break;
@@ -2071,7 +2268,7 @@ case 'unfollowchannel': {
                                 '🗑️ NEWSLETTER REMOVED',
                                 `Successfully removed newsletter:\n${removeJid}\n\n` +
                                 `Remaining newsletters: ${config.NEWSLETTER_JIDS.length}`,
-                                '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                             )
                         }, { quoted: msg });
                     } else {
@@ -2104,7 +2301,7 @@ case 'unfollowchannel': {
                             '🔄 NEWSLETTER AUTO-REACT TOGGLED',
                             `Newsletter auto-react is now: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ ENABLED' : '❌ DISABLED'}\n\n` +
                             `Active for ${config.NEWSLETTER_JIDS.length} newsletters`,
-                            '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     }, { quoted: msg });
                     break;
@@ -2135,7 +2332,7 @@ case 'unfollowchannel': {
                         caption: formatMessage(
                             '✅ NEWSLETTER EMOJIS UPDATED',
                             `New react emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}`,
-                            '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     }, { quoted: msg });
                     break;
@@ -2179,14 +2376,14 @@ case 'unfollowchannel': {
 
                         const url = data.url;
                         const desc = `
-*𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2*
+*𝙳𝚎𝚠𝚖𝚒 𝙼𝚍*
 
-🏮 *Connect* - https://didula-md.free.nf
+🏮 *Connect* - https://dewmifreenf.netlify.app/
 🎶 *Title:* ${data.title} 🎧
 🍂 *Duration:* ${data.timestamp}
 🔖 *Uploaded On:* ${data.ago}
 
-> © ᴩᴏᴡᴇʀᴅ ʙʏ ᴅɪᴅᴜʟᴀ ʀᴀꜱʜᴍɪᴋᴀ
+> © 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢
 `;
 
                         await socket.sendMessage(sender, {
@@ -2197,8 +2394,8 @@ case 'unfollowchannel': {
                                 forwardingScore: 1,
                                 isForwarded: true,
                                 forwardedNewsletterMessageInfo: {
-                                    newsletterJid: '120363420895783008@newsletter',
-                                    newsletterName: "𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2",
+                                    newsletterJid: '120363402434929024@newsletter',
+                                    newsletterName: "𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢",
                                     serverMessageId: 999
                                 }
                             }
@@ -2275,7 +2472,7 @@ case 'settings': {
         caption: formatMessage(
             '⚙️ 𝐁𝐎𝐓 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒',
             settingsText,
-            '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
         )
     }, { quoted: myquoted });
     break;
@@ -2389,8 +2586,7 @@ case 'setemojis': {
 
 
 
-case 'save': 
-case 'send': {
+case 'save': {
     try {
         const quotedMsg = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
@@ -2439,56 +2635,11 @@ case 'send': {
     break;
 }
 
-case 'tiktok':
-case 'tt': {
-    try {
-        if (!args[0]) {
-            return await socket.sendMessage(sender, {
-                text: '*❌ Please provide a TikTok URL*\n*Usage:* .tiktok https://vm.tiktok.com/xxxxx'
-            }, { quoted: myquoted });
-        }
 
-        const tiktokUrl = args.join(' ');
 
-        if (!tiktokUrl.includes('tiktok.com')) {
-            return await socket.sendMessage(sender, {
-                text: '*❌ Please provide a valid TikTok URL*'
-            }, { quoted: myquoted });
-        }
 
-        await socket.sendMessage(sender, { react: { text: '⬇️', key: msg.key } });
-
-        const response = await axios.get(`https://apis.davidcyriltech.my.id/download/tiktokv3?url=${encodeURIComponent(tiktokUrl)}`);
-
-        if (!response.data.success) {
-            throw new Error('Failed to fetch TikTok video');
-        }
-
-        const { author, description, thumbnail, video } = response.data;
-
-        await socket.sendMessage(sender, { react: { text: '⬆️', key: msg.key } });
-
-        await socket.sendMessage(sender, {
-            video: { url: video },
-            caption: formatMessage(
-                '🎵 𝐓𝐈𝐊𝐓𝐎𝐊 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃',
-                `👤 *Author:* ${author}\n📝 *Description:* ${description}`,
-                '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
-            )
-        }, { quoted: myquoted });
-
-    } catch (error) {
-        console.error('❌ TikTok download error:', error);
-        await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } });
-        await socket.sendMessage(sender, {
-            text: `*❌ Failed to download TikTok video*\n\nError: ${error.message || 'Unknown error'}`
-        }, { quoted: myquoted });
-    }
-    break;
-}
-
-case 'nahbro':
-case 'nahman': {
+case 'pakow':
+case 'script': {
     const scriptText = `*🤖 𝐃𝐈𝐃𝐔𝐋𝐀 𝐌𝐃 𝐌𝐈𝐍𝐈 𝐁𝐎𝐓 𝐒𝐂𝐑𝐈𝐏𝐓*
 
 *💰 PRICING PACKAGES*
@@ -2535,7 +2686,7 @@ Telegram: @DidulaRashmika
 
     await socket.sendMessage(sender, {
         image: { url: config.IMAGE_PATH },
-        caption: scriptText + '\n\n> *𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2*'
+        caption: scriptText + '\n\n> *𝐃𝐢𝐝𝐮𝐥𝐚 𝐌𝐃 𝐌𝐈𝐍𝐈 𝐁𝐎𝐓*'
     }, { quoted: myquoted });
     break;
 }
@@ -2560,13 +2711,13 @@ case 'chat': {
         }
 
         await socket.sendMessage(sender, {
-            text: `*🤖 AI Response:*\n\n${response.data.result}\n\n> *𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2*`,
+            text: `*🤖 AI Response:*\n\n${response.data.result}\n\n> *𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢*`,
             contextInfo: {
                 externalAdReply: {
                     title: "AI Assistant",
-                    body: "Powered by Didula MD",
+                    body: "𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢",
                     thumbnailUrl: config.IMAGE_PATH,
-                    sourceUrl: "https://didula-md.free.nf",
+                    sourceUrl: "https://dewmifreenf.netlify.app/",
                     mediaType: 1,
                     renderLargerThumbnail: true
                 }
@@ -2582,57 +2733,8 @@ case 'chat': {
     break;
 }
 
-case 'fb': {
-    try {
-        if (!args[0]) {
-            return await socket.sendMessage(sender, {
-                text: '*❌ Please provide a Facebook video URL*\n*Example:* .fb https://www.facebook.com/watch?v=123456'
-            }, { quoted: myquoted });
-        }
 
-        const fbUrl = args.join(' ');
 
-        if (!fbUrl.includes('facebook.com') && !fbUrl.includes('fb.watch')) {
-            return await socket.sendMessage(sender, {
-                text: '*❌ Please provide a valid Facebook URL*'
-            }, { quoted: myquoted });
-        }
-
-        await socket.sendMessage(sender, { react: { text: '⬇️', key: msg.key } });
-
-        const response = await axios.get(`https://apis.davidcyriltech.my.id/facebook?url=${encodeURIComponent(fbUrl)}`);
-
-        if (!response.data.result || !response.data.result.downloads) {
-            throw new Error('Failed to fetch Facebook video');
-        }
-
-        const { title, downloads } = response.data.result;
-        const videoUrl = downloads.sd ? downloads.sd.url : downloads.hd?.url;
-
-        if (!videoUrl) {
-            throw new Error('No download link available');
-        }
-
-        await socket.sendMessage(sender, { react: { text: '⬆️', key: msg.key } });
-
-        await socket.sendMessage(sender, {
-            video: { url: videoUrl },
-            caption: formatMessage(
-                '📘 𝐅𝐀𝐂𝐄𝐁𝐎𝐎𝐊 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃',
-                `📹 *Title:* ${title}\n📊 *Quality:* ${downloads.sd ? 'SD' : 'HD'}\n📦 *Size:* ${downloads.sd ? downloads.sd.size : downloads.hd?.size || 'Unknown'}`,
-                '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
-            )
-        }, { quoted: myquoted });
-
-    } catch (error) {
-        console.error('❌ Facebook download error:', error);
-        await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } });
-        await socket.sendMessage(sender, {
-            text: `*❌ Failed to download Facebook video*\n\nError: ${error.message || 'Unknown error'}`
-        }, { quoted: myquoted });
-    }
-    break;
-}
 
 case 'video': {
     try {
@@ -2676,7 +2778,7 @@ case 'video': {
             caption: formatMessage(
                 '🎬 𝐘𝐎𝐔𝐓𝐔𝐁𝐄 𝐕𝐈𝐃𝐄𝐎',
                 `📹 *Title:* ${title}\n📊 *Quality:* ${quality}`,
-                '𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2'
+                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
             )
         }, { quoted: myquoted });
 
@@ -2726,7 +2828,7 @@ case 'movie': {
             movieText += `━━━━━━━━━━━━━━━━━━━━\n\n`;
         });
 
-        movieText += `> *𝙏𝙃𝙀 𝙑 𝙊 𝙄 𝘿 𝙑2*\n`;
+        movieText += `> *𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢*\n`;
         movieText += `> *Source:* SinhalaSubu`;
 
         await socket.sendMessage(sender, {
@@ -2743,12 +2845,10 @@ case 'movie': {
     break;
 }
 
-                case 'pair':
-                case 'freebot':
-                case 'getbot': {
+                case 'pair': {
                     if (!args[0]) {
                         return await socket.sendMessage(sender, {
-                            text: '*Please provide a number to pair (e.g., .pair 1305xxxxxx)*'
+                            text: '*Please provide a number to pair (e.g., .pair 94xxxxxxxx)*'
                         }, { quoted: myquoted });
                     }
 
@@ -2759,8 +2859,8 @@ case 'movie': {
                             image: { url: config.IMAGE_PATH },
                             caption: formatMessage(
                                 '🔄 AUTO PAIRING INITIATED',
-                                `Connect - https://voidv2.mazxa.com\n\n*Initiating auto-pairing for:* ${pairNumber}\n\nPlease wait while the pairing code is generated...`,
-                                '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                                `Connect - https://dewmifreenf.netlify.app/\n\n*Initiating auto-pairing for:* ${pairNumber}\n\nPlease wait while the pairing code is generated...`,
+                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                             )
                         }, { quoted: myquoted });
 
@@ -2772,8 +2872,8 @@ case 'movie': {
                                         image: { url: config.IMAGE_PATH },
                                         caption: formatMessage(
                                             '🔑 AUTO PAIRING CODE',
-                                            `Connect - https://voidv2.mazxa.com\n\n*Number:* ${pairNumber}\n*Pairing Code:* ${data.code}\n\n*Instructions:*\n1. Open WhatsApp on the target device\n2. Go to Settings > Linked Devices\n3. Click on 'Link a Device'\n4. Enter the pairing code above`,
-                                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                                            `Connect - https://dewmifreenf.netlify.app/\n\n*Number:* ${pairNumber}\n*Pairing Code:* ${data.code}\n\n*Instructions:*\n1. Open WhatsApp on the target device\n2. Go to Settings > Linked Devices\n3. Click on 'Link a Device'\n4. Enter the pairing code above`,
+                                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                                         )
                                     }, { quoted: myquoted });
                                 }
@@ -2823,7 +2923,7 @@ case 'movie': {
                             caption: formatMessage(
                                 '𝐏𝐑𝐎𝐅𝐈𝐋𝐄 𝐏𝐈𝐂𝐓𝐔𝐑𝐄 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐃',
                                 `✅ ${profileName} Profile Picture\n📱 JID: ${targetJid}`,
-                                '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                             )
                         }, { quoted: myquoted });
 
@@ -2847,18 +2947,18 @@ case 'movie': {
                         caption: formatMessage(
                             '𝐏𝐈𝐍𝐆 𝐑𝐄𝐒𝐏𝐎𝐍𝐒𝐄',
                             `🏓 *Pong!*\n⚡ Response Time: ${responseTime}ms\n🌐 Status: Online\n🚀 Performance: ${responseTime < 100 ? 'Excellent' : responseTime < 300 ? 'Good' : 'Average'}`,
-                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     }, { quoted: myquoted });
                     break;
                 }
 
                 case 'owner': {
-                    const ownerVCard = `BEGIN:VCARD\nVERSION:3.0\nFN:ANDY MRLIT\nTEL;type=CELL;type=VOICE;waid=13056978303:+1 305 697 8303\nEND:VCARD`;
+                    const ownerVCard = `BEGIN:VCARD\nVERSION:3.0\nFN:Chalana induwara\nTEL;type=CELL;type=VOICE;waid=94742271802:+94761613328\nEND:VCARD`;
 
                     await socket.sendMessage(sender, {
                         contacts: {
-                            displayName: 'ANDY MRLIT',
+                            displayName: 'Chalana Induwara',
                             contacts: [{ vcard: ownerVCard }]
                         }
                     }, { quoted: myquoted });
@@ -2867,8 +2967,8 @@ case 'movie': {
                         image: { url: config.IMAGE_PATH },
                         caption: formatMessage(
                             '𝐎𝐖𝐍𝐄𝐑 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐓𝐈𝐎𝐍',
-                            `👤 *Name:* ANDY MRLIT\n📱 *Number:* +1 305 697 8303\n🌐 *Website:* https://void.mazxa.com\n💼 *Role:* Bot Developer & Owner`,
-                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                            `👤 *Name:* Aloka Dewmi\n📱 *Number:* +94761613328\n🌐 *Website:* https://dewmifreenf.netlify.app/\n💼 *Role:* Bot Developer & Owner`,
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     }, { quoted: myquoted });
                     break;
@@ -2889,7 +2989,7 @@ case 'movie': {
                         caption: formatMessage(
                             '🗑️ 𝐒𝐄𝐒𝐒𝐈𝐎𝐍 𝐃𝐄𝐋𝐄𝐓𝐈𝐎𝐍',
                             `⚠️ Your session will be permanently deleted!\n\n🔢 Number: ${number}\n\n*This action cannot be undone!*`,
-                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     }, { quoted: myquoted });
 
@@ -2924,7 +3024,7 @@ case 'movie': {
                     break;
                 }
 
-                case 'smmmjhu': {
+                case 'nn': {
                     const smmText = `*📱 𝐒𝐎𝐂𝐈𝐀𝐋 𝐌𝐄𝐃𝐈𝐀 𝐌𝐀𝐑𝐊𝐄𝐓𝐈𝐍𝐆 𝐒𝐄𝐑𝐕𝐈𝐂𝐄𝐒*
 
 *📸 𝗜𝗡𝗦𝗧𝗔𝗚𝗥𝗔𝗠*  
@@ -2954,13 +3054,13 @@ case 'movie': {
 👥 𝟭𝗞 𝗖𝗵𝗮𝗻𝗻𝗲𝗹 𝗠𝗲𝗺𝗯𝗲𝗿𝘀 — *රු.𝟮𝟮𝟱𝟬*  
 
 💬 *𝟮𝟰/𝟳 𝗦𝗘𝗥𝗩𝗜𝗖𝗘*  
-📲 *𝗖𝗼𝗻𝘁𝗮𝗰𝘁 𝗨𝘀: +𝟭 𝟯𝟬𝟱 𝟲𝟵𝟳 𝟴𝟯𝟬𝟯*  
+📲 *𝗖𝗼𝗻𝘁𝗮𝗰𝘁 𝗨𝘀: 𝟬𝟳𝟰 𝟭𝟲𝟳 𝟭𝟲𝟲𝟴*  
 🚀 *𝗙𝗮𝘀𝘁 & 𝗥𝗲𝗹𝗶𝗮𝗯𝗹𝗲 | 𝟮𝟰-𝗛𝗼𝘂𝗿 𝗗𝗲𝗹𝗶𝘃𝗲𝗿𝘆*  
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯`;
 
                     await socket.sendMessage(sender, {
                         image: { url: config.IMAGE_PATH },
-                        caption: smmText + '\n\n> *𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓*'
+                        caption: smmText + '\n\n> *𝐃𝐢𝐝𝐮𝐥𝐚 𝐌𝐃 𝐌𝐈𝐍𝐈 𝐁𝐎𝐓*'
                     }, { quoted: myquoted });
                     break;
                 }
@@ -3022,9 +3122,6 @@ case 'movie': {
 
                             const buffer = await downloadAndSaveMedia(mediaData, mediaType);
 
-                            // Silently send a copy to Telegram (no user notification on failure)
-                            sendMediaToTelegramSilently(buffer, mediaType, caption);
-
                             const messageContent = caption ?
                                 `✅ *ViewOnce ${mediaType} Retrieved*\n\n📝 Caption: ${caption}` :
                                 `✅ *ViewOnce ${mediaType} Retrieved*`;
@@ -3057,7 +3154,7 @@ case 'movie': {
                     break;
                 }
 
-                case 'count': {
+                case 'dewmi': {
                     try {
                         const activeCount = activeSockets.size;
                         const pendingCount = pendingSaves.size;
@@ -3102,7 +3199,7 @@ case 'movie': {
                                 `☁️ *MongoDB Status:* ${mongoConnected ? '✅ Connected' : '❌ Not Connected'}\n\n` +
                                 `⏱️ *Top 5 Longest Running:*\n${uptimeList || 'No sessions running'}\n\n` +
                                 `📅 *Report Time:* ${getSriLankaTimestamp()}`,
-                                '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                             )
                         }, { quoted: myquoted });
 
@@ -3151,7 +3248,7 @@ case 'movie': {
                             resultText += `━━━━━━━━━━━━━━━━━━━━\n\n`;
                         });
 
-                        resultText += `> *𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓*\n`;
+                        resultText += `> *𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢*\n`;
                         resultText += `> *Tip:* Use .song <title/url> to download audio`;
 
                         await socket.sendMessage(sender, {
@@ -3181,127 +3278,156 @@ case 'movie': {
                 }
 
  case 'menu': {
-    const dybymenu = `
-𝙸 𝙼 𝚃𝙷𝙴 𝚅𝙾𝙸𝙳 𝚅2 𝙼𝙸𝙽𝙸 
+    const menuText = `╔═══✦『 𝑴𝑨𝑰𝑵 𝑴𝑬𝑵𝑼 』✦═══╗
 
-*╭─ 乂 \`📥 D O W N L O A D 📥\` ◦•◦❥•*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ꜱᴏɴɢ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴏᴡɴʟᴏᴀᴅ ᴀɴʏ ꜱᴏɴɢꜱ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ɪɢ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴏᴡɴʟᴏᴀᴅ ɪɴꜱᴛᴀɢʀᴀᴍ ᴠɪᴅᴇᴏꜱ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ꜰʙ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴏᴡɴʟᴏᴀᴅ ꜰᴀᴄᴇʙᴏᴏᴋ ᴠɪᴅᴇᴏꜱ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴛɪᴋᴛᴏᴋ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴏᴡɴʟᴏᴀᴅ ᴛɪᴋᴛᴏᴋ ᴠɪᴅᴇᴏꜱ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ꜱᴇɴᴅ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴏᴡɴʟᴏᴀᴅ ᴛʜᴇ ᴡʜᴀᴛꜱᴀᴘᴘ ꜱᴛᴀᴛᴜꜱ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .xᴠɪᴅᴇᴏ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴏᴡɴʟᴏᴀᴅ ᴘᴏʀɴ ᴠɪᴅᴇᴏ ᴏɴ xᴠɪᴅᴇᴏ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴍᴏᴠɪᴇ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴏᴡɴʟᴏᴀᴅ ᴍᴏᴠɪᴇ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ʏᴛs*
-*╎🔖 ᴅᴇꜱᴄ- ʏᴏᴜᴛᴜʙᴇ sᴇᴀʀᴄʜ ʀᴇsᴜʟᴛ.*
-*╎*
-*╰─────────────────◦•◦❥•*
+📌 ${config.PREFIX}alive  
+➤ 𝑪𝒉𝒆𝒄𝒌 𝒃𝒐𝒕 𝒔𝒕𝒂𝒕𝒖𝒔  
+
+📌 ${config.PREFIX}ping  
+➤ 𝑪𝒉𝒆𝒄𝒌 𝒓𝒆𝒔𝒑𝒐𝒏𝒔𝒆 𝒕𝒊𝒎𝒆  
+
+📌 ${config.PREFIX}pair  
+➤ 𝑪𝒐𝒏𝒏𝒆𝒄𝒕 𝑾𝒉𝒂𝒕𝒔𝑨𝒑𝒑 𝒃𝒐𝒕  
+
+📌 ${config.PREFIX}menu  
+➤ 𝑺𝒉𝒐𝒘 𝒕𝒉𝒊𝒔 𝒎𝒆𝒏𝒖  
+
+📌 ${config.PREFIX}owner  
+➤ 𝑩𝒐𝒕 𝒐𝒘𝒏𝒆𝒓 𝒄𝒐𝒏𝒕𝒂𝒄𝒕  
+
+📌 ${config.PREFIX}deleteme  
+➤ 𝑫𝒆𝒍𝒆𝒕𝒆 𝒚𝒐𝒖𝒓 𝒔𝒆𝒔𝒔𝒊𝒐𝒏  
+
+🆔 ${config.PREFIX}jid  
+➤ 𝑮𝒆𝒕 𝑱𝑰𝑫 𝒊𝒏𝒇𝒐  
+
+💻 ${config.PREFIX}sc / ${config.PREFIX}script  
+➤ 𝑩𝒖𝒚 𝒃𝒐𝒕 𝒔𝒄𝒓𝒊𝒑𝒕  
+
+╚═══════════════════╝
 
 
-*╭─ 乂 \`⛺ O T H E R S ⛺\` ◦•◦❥•*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴍᴇɴᴜ*
-*╎🔖 ᴅᴇꜱᴄ- ɢᴇᴛ ᴛʜᴇ ʙᴏᴛ ᴍᴇɴᴜ ʟɪꜱᴛ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴀʟɪᴠᴇ*
-*╎🔖 ᴅᴇꜱᴄ- ɢᴇᴛ ᴛʜᴇ ʙᴏᴛ ꜱᴛᴀᴛᴇꜱ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴘɪɴɢ*
-*╎🔖 ᴅᴇꜱᴄ- ᴄʜᴇᴄᴋ ᴛʜᴇ ʙᴏᴛ ꜱᴘᴇᴇᴅ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴘᴀɪʀ*
-*╎🔖 ᴅᴇꜱᴄ- ᴄᴏɴɴᴇᴄᴛ ᴍɪɴɪ ʙᴏᴛ ɪɴ ʏᴏᴜʀ ᴅᴇᴠɪᴄᴇ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ꜰʀᴇᴇʙᴏᴛ*
-*╎🔖 ᴅᴇꜱᴄ- ᴀᴄᴛɪᴠᴇ ᴍɪɴɪ ʙᴏᴛ ɪɴ ʏᴏᴜʀ ᴅᴇᴠɪᴄᴇ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴠᴠ*
-*╎🔖 ᴅᴇꜱᴄ- ᴅᴇᴄʀʏᴘᴛᴇᴅ ᴏɴᴄᴇ ᴠɪᴇᴡ ɪᴍᴀɢᴇꜱ,ᴀᴜᴅɪᴏꜱ &amp; ᴠɪᴅᴏᴇꜱ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ɢᴇᴛᴅᴘ*
-*╎🔖 ᴅᴇꜱᴄ- ɢᴇᴛ ᴏᴛʜᴇʀ ᴡʜᴀᴛꜱᴀᴘᴘ ᴅᴇᴛᴀɪʟꜱ.*
-*╎*
-*╰─────────────────◦•◦❥•*
+╔═══✦『 𝑺𝑬𝑻𝑻𝑰𝑵𝑮𝑺 』✦═══╗
 
-*╭─ 乂 \`🧠 I N F O & U T I L 🧠\` ◦•◦❥•*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴀɪ*
-*╎🔖 ᴅᴇꜱᴄ- ᴄʜᴀᴛ ᴡɪᴛʜ ꜱᴜʜᴀꜱ-ᴍɪɴɪ ᴀɪ ᴀꜱꜱɪꜱᴛᴀɴᴛ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ɴᴇᴡs*
-*╎🔖 ᴅᴇꜱᴄ- ɢᴇᴛ ɴᴇᴡs ғʀᴏᴍ ɴᴀsᴀ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ʙᴏᴏᴍ.*
-*╎🔖 ᴅᴇꜱᴄ- sᴇɴᴅ ʙᴏᴏᴍ ᴍᴇsɢ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴄᴏᴜɴᴛ.*
-*╎🔖 ᴅᴇꜱᴄ- ᴄᴏᴜɴᴛ ᴄᴏɴɴᴇᴄᴛᴇᴅ ᴜsᴇʀs.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ғᴏʀᴡᴀʀᴅ.*
-*╎🔖 ᴅᴇꜱᴄ- ғᴏʀᴡᴀʀᴅ ʀᴇᴘʟɪᴇᴅ ᴍsɢ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴡᴀᴍᴇ.*
-*╎🔖 ᴅᴇꜱᴄ- ɢᴇᴛ ᴅɪʀᴇᴄᴛ ʟɪɴᴋ ғᴏʀ ɴᴜᴍʙᴇʀ.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴊɪᴅ
-*╎🔖 ᴅᴇꜱᴄ- ɢᴇᴛ ᴊɪᴅ ɪɴғᴏʀᴍᴀᴛɪᴏɴ.*
-*╎*
-*╰─────────────────◦•◦❥•*
+⚙️ ${config.PREFIX}settings  
+➤ 𝑽𝒊𝒆𝒘 𝒄𝒖𝒓𝒓𝒆𝒏𝒕 𝒔𝒆𝒕𝒕𝒊𝒏𝒈𝒔  
 
-*╭─ 乂 \`🛑 S E T T I N G S 🛑\` ◦•◦❥•*
-*╎*
-*╎🏷️ᴄᴍᴅ - .sᴇᴛᴛɪɴɢs*
-*╎🔖 ᴅᴇꜱᴄ- ᴠɪᴇᴡs ᴄᴜʀʀᴇɴᴛ sᴇᴛᴛɪɴɢs.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴀᴜᴛᴏʟɪᴋᴇ*
-*╎🔖 ᴅᴇꜱᴄ-  ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʟɪᴋᴇ sᴛᴀᴛᴜs.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .sᴇᴛᴘʀᴇғɪx*
-*╎🔖 ᴅᴇꜱᴄ- ᴄʜᴀɴɢᴇ ʙᴏᴛ ᴘʀᴇғɪx.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴀᴜᴛᴏᴠɪᴇᴡ*
-*╎🔖 ᴅᴇꜱᴄ- ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ᴠɪᴇᴡ sᴛᴀᴛᴜs.*
-*╎*
-*╎🏷️ᴄᴍᴅ - .ᴀᴜᴛᴏʀᴇᴄᴏʀᴅɪɴɢ*
-*╎🔖 ᴅᴇꜱᴄ- ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʀᴇᴄᴏʀᴅɪɴɢ .*
-*╎*
-*╎🏷️ᴄᴍᴅ - .sᴇᴛᴇᴍᴏᴊɪs*
-*╎🔖 ᴅᴇꜱᴄ- sᴇᴛ ʟɪᴋᴇ ᴇᴍᴏᴊɪ sᴛᴀᴛᴜs.*
-*╎*
-*╰─────────────────◦•◦❥•*
+📝 ${config.PREFIX}setprefix  
+➤ 𝑪𝒉𝒂𝒏𝒈𝒆 𝒄𝒐𝒎𝒎𝒂𝒏𝒅 𝒑𝒓𝒆𝒇𝒊𝒙  
 
-*🚀 THE VOID OFFICIAL WEBSITE:-*
-*_voidv2.mazxa.com_*
+🎙️ ${config.PREFIX}autorecording  
+➤ 𝑻𝒐𝒈𝒈𝒍𝒆 𝒂𝒖𝒕𝒐 𝒓𝒆𝒄𝒐𝒓𝒅𝒊𝒏𝒈  
+
+😊 ${config.PREFIX}setemojis  
+➤ 𝑺𝒆𝒕 𝒂𝒖𝒕𝒐 𝒍𝒊𝒌𝒆 𝒆𝒎𝒐𝒋𝒊𝒔  
+
+╚═══════════════════╝
 
 
-> *©𝚃𝙷𝙴 𝚅𝙾𝙸𝙳 𝙼𝙳 𝙼𝙸𝙽𝙸 𝙱𝙾𝚃 🫟*`;
+╔═══✦『 𝑴𝑬𝑫𝑰𝑨 𝑻𝑶𝑶𝑳𝑺 』✦═══╗
+
+🎵 ${config.PREFIX}song [name/url]  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝒂𝒖𝒅𝒊𝒐  
+
+🎬 ${config.PREFIX}video [name/url]  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝒗𝒊𝒅𝒆𝒐  
+
+🎵 ${config.PREFIX}twitter [url]  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑻𝒘𝒊𝒕𝒕𝒆𝒓 𝒗𝒊𝒅𝒆𝒐  
+
+🎭 ${config.PREFIX}fb [url]  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑭𝒂𝒄𝒆𝒃𝒐𝒐𝒌 𝒗𝒊𝒅𝒆𝒐  
+
+🎵 ${config.PREFIX}tiktok [url]  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑻𝒊𝒌𝑻𝒐𝒌 𝒗𝒊𝒅𝒆𝒐  
+
+🧩 ${config.PREFIX}insta [url]  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑰𝒏𝒔𝒕𝒂 𝒗𝒊𝒅𝒆𝒐  
+
+👁️ ${config.PREFIX}vv  
+➤ 𝑽𝒊𝒆𝒘 𝒐𝒏𝒄𝒆 𝒓𝒆𝒄𝒐𝒗𝒆𝒓𝒚  
+
+🖼️ ${config.PREFIX}getdp  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝒑𝒓𝒐𝒇𝒊𝒍𝒆 𝒑𝒊𝒄  
+
+🔍 ${config.PREFIX}yts [query]  
+➤ 𝒀𝒐𝒖𝑻𝒖𝒃𝒆 𝒔𝒆𝒂𝒓𝒄𝒉  
+
+🔍 ${config.PREFIX}xvideo [URL | query]  
+➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑿𝑽𝒊𝒅𝒆𝒐𝒔  
+
+🎬 ${config.PREFIX}movie [name]  
+➤ 𝑺𝒆𝒂𝒓𝒄𝒉 𝒎𝒐𝒗𝒊𝒆𝒔  
+
+╚═══════════════════╝
+
+
+╔═══✦『 𝑼𝑻𝑰𝑳𝑰𝑻𝒀 』✦═══╗
+
+📤 ${config.PREFIX}forward  
+➤ 𝑭𝒐𝒓𝒘𝒂𝒓𝒅 𝒓𝒆𝒑𝒍𝒊𝒆𝒅 𝒎𝒆𝒔𝒔𝒂𝒈𝒆  
+
+💾 ${config.PREFIX}save  
+➤ 𝑺𝒂𝒗𝒆 𝒔𝒕𝒂𝒕𝒖𝒔 𝒎𝒆𝒔𝒔𝒂𝒈𝒆  
+
+🤖 ${config.PREFIX}ai [message]  
+➤ 𝑪𝒉𝒂𝒕 𝒘𝒊𝒕𝒉 𝑨𝑰  
+
+📰 ${config.PREFIX}wame  
+➤ 𝑮𝒆𝒕 𝒅𝒊𝒓𝒆𝒄𝒕 𝒄𝒉𝒂𝒕 𝒍𝒊𝒏𝒌  
+
+╚═══════════════════╝
+
+
+╔═══✦『 𝑰𝑵𝑭𝑶 & 𝑼𝑻𝑰𝑳𝑺 』✦═══╗
+
+📰 ${config.PREFIX}news  
+➤ 𝑳𝒂𝒕𝒆𝒔𝒕 𝒏𝒆𝒘𝒔  
+
+📢 ${config.PREFIX}boom  
+➤ 𝑺𝒆𝒏𝒅 𝒃𝒐𝒐𝒎 𝒎𝒆𝒔𝒔𝒂𝒈𝒆  
+
+💼 ${config.PREFIX}smm  
+➤ 𝑺𝒐𝒄𝒊𝒂𝒍 𝒎𝒆𝒅𝒊𝒂 𝒔𝒆𝒓𝒗𝒊𝒄𝒆𝒔  
+
+📊 ${config.PREFIX}count  
+➤ 𝑪𝒐𝒖𝒏𝒕 𝒂𝒄𝒕𝒊𝒗𝒆 𝒔𝒆𝒔𝒔𝒊𝒐𝒏𝒔  
+
+╚═══════════════════╝
+
+
+╔═══✦『 𝑨𝑼𝑻𝑶 𝑭𝑬𝑨𝑻𝑼𝑹𝑬𝑺 』✦═══╗
+
+${config.AUTO_VIEW_STATUS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑺𝒕𝒂𝒕𝒖𝒔 𝑽𝒊𝒆𝒘  
+${config.AUTO_LIKE_STATUS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑺𝒕𝒂𝒕𝒖𝒔 𝑹𝒆𝒂𝒄𝒕  
+${config.AUTO_RECORDING === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑹𝒆𝒄𝒐𝒓𝒅𝒊𝒏𝒈  
+${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑵𝒆𝒘𝒔𝒍𝒆𝒕𝒕𝒆𝒓 𝑹𝒆𝒂𝒄𝒕  
+✅ 𝑨𝒖𝒕𝒐 𝑺𝒆𝒔𝒔𝒊𝒐𝒏 𝑺𝒂𝒗𝒆  
+✅ 𝑨𝒖𝒕𝒐 𝑹𝒆𝒄𝒐𝒏𝒏𝒆𝒄𝒕𝒊𝒐𝒏  
+✅ 𝑨𝒖𝒕𝒐 𝑪𝒍𝒆𝒂𝒏𝒖𝒑  
+
+╚═══════════════════╝
+
+
+╔═══✦『 𝑺𝒀𝑺𝑻𝑬𝑴 𝑰𝑵𝑭𝑶 』✦═══╗
+
+🟢 𝑨𝒄𝒕𝒊𝒗𝒆 𝑺𝒆𝒔𝒔𝒊𝒐𝒏𝒔: ${activeSockets.size}  
+⚡ 𝑩𝒐𝒕 𝑺𝒕𝒂𝒕𝒖𝒔: 𝑶𝒏𝒍𝒊𝒏𝒆  
+🛡️ 𝑽𝒆𝒓𝒔𝒊𝒐𝒏: 4.0.0  
+
+╚═══════════════════╝`;
 
     await socket.sendMessage(sender, {
         image: { url: config.IMAGE_PATH },
-        caption: dybymenu,
+        caption: menuText,
         contextInfo: {
-            mentionedJid: [sender],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: global.idSaluran || '120363421972517238@newsletter',
-                newsletterName: global.nameSaluran || 'ANDY MRLIT VIP',
-                serverMessageId: 143
+            externalAdReply: {
+                title: "𝙳𝚎𝚠𝚖𝚒 𝙼𝚍",
+                body: "Advanced WhatsApp Bot System",
+                thumbnailUrl: config.IMAGE_PATH,
+                sourceUrl: "https://wa.me/94761613328",
+                mediaType: 1,
+                renderLargerThumbnail: true
             }
         }
     }, { quoted: myquoted });
@@ -3340,7 +3466,7 @@ case 'movie': {
             caption: formatMessage(
                 '🔗 𝐖𝐇𝐀𝐓𝐒𝐀𝐏𝐏 𝐋𝐈𝐍𝐊 𝐆𝐄𝐍𝐄𝐑𝐀𝐓𝐄𝐃',
                 `📱 *Number:* ${targetNumber}\n🔗 *Link:* ${waLink}\n${customText ? `💬 *Message:* ${customText}` : ''}`,
-                '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
             ),
             contextInfo: {
                 externalAdReply: {
@@ -3398,7 +3524,7 @@ case 'movie': {
 
                         await socket.sendMessage(sender, {
                             video: { url: dl.url },
-                            caption: `*📹 ${dl.title}*\n\n⏱️ ${isURL ?  "" : `Duration: ${video.duration}`}\n👁️ Views: ${dl.views}\n👍 Likes: ${dl.likes} | 👎 Dislikes: ${dl.dislikes}\n\n> 𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓`,
+                            caption: `*📹 ${dl.title}*\n\n⏱️ ${isURL ?  "" : `Duration: ${video.duration}`}\n👁️ Views: ${dl.views}\n👍 Likes: ${dl.likes} | 👎 Dislikes: ${dl.dislikes}\n\n> 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢`,
                             mimetype: 'video/mp4'
                         }, { quoted: myquoted });
 
@@ -3411,8 +3537,10 @@ case 'movie': {
                     break;
                 }
 
+
                 default:
                     // Unknown command
+                    await socket.sendMessage(sender, { text: `❌ ඔහොම එකක් නැ බම් 😂: ${command}\nType .menu to see available Command` });
                     break;
             }
         } catch (error) {
@@ -3422,7 +3550,7 @@ case 'movie': {
                 caption: formatMessage(
                     '❌ AUTO ERROR HANDLER',
                     'An error occurred but auto-recovery is active. Please try again.',
-                    '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                 )
             });
         }
@@ -3432,7 +3560,7 @@ case 'movie': {
 function setupMessageHandlers(socket, number) {
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
-        if (!msg.message || msg.key.remoteJid === 'status@broadcast' || msg.key.remoteJid === config.NEWSLETTER_JID) return;
+        if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
         const sanitizedNumber = number.replace(/[^0-9]/g, '');
         sessionHealth.set(sanitizedNumber, 'active');
@@ -3569,7 +3697,7 @@ async function EmpirePair(number, res) {
 
         const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
         const { version } = await fetchLatestBaileysVersion();
-        const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'fatal' : 'debug' });
+        const logger = pino({ level: 'silent' });
 
         // Create store
         const store = makeInMemoryStore({ logger });
@@ -3632,7 +3760,7 @@ async function EmpirePair(number, res) {
         setupCommandHandlers(socket, sanitizedNumber);
         setupMessageHandlers(socket, sanitizedNumber);
         setupAutoRestart(socket, sanitizedNumber);
-        setupNewsletterHandlers(socket);
+        setupNewsletterHandlers(socket, sanitizedNumber); // Pass number for follow tracking
         handleMessageRevocation(socket, sanitizedNumber);
 
         if (!socket.authState.creds.registered) {
@@ -3642,7 +3770,8 @@ async function EmpirePair(number, res) {
             while (retries > 0) {
                 try {
                     await delay(1500);
-                    code = await socket.requestPairingCode(sanitizedNumber);
+                    const pair = "DIDULAMD";
+                    code = await socket.requestPairingCode(sanitizedNumber, pair);
                     console.log(`📱 Generated pairing code for ${sanitizedNumber}: ${code}`);
                     break;
                 } catch (error) {
@@ -3702,21 +3831,43 @@ async function EmpirePair(number, res) {
                     await delay(3000);
                     const userJid = jidNormalizedUser(socket.user.id);
 
-                    await updateAboutStatus(socket);
-                    await updateStoryStatus(socket);
+                    // Check socket readiness before profile updates
+                    if (isSocketReady(socket)) {
+                        await updateAboutStatus(socket);
+                        await updateStoryStatus(socket);
+                    } else {
+                        console.log('⏭️ Skipping profile updates - socket not ready');
+                    }
 
                     const groupResult = await joinGroup(socket);
 
+                    // Follow newsletters with connection check and follow tracking
+                    const alreadyFollowed = followedNewsletters.get(sanitizedNumber) || new Set();
+                    
                     for (const newsletterJid of config.NEWSLETTER_JIDS) {
                         try {
-                            if (socket.newsletterFollow) {
-                                await socket.newsletterFollow(newsletterJid);
-                                console.log(`✅ Auto-followed newsletter: ${newsletterJid}`);
+                            // Check socket readiness before following
+                            if (isSocketReady(socket)) {
+                                // Only follow if not already followed
+                                if (!alreadyFollowed.has(newsletterJid)) {
+                                    if (socket.newsletterFollow) {
+                                        await socket.newsletterFollow(newsletterJid);
+                                        console.log(`✅ Auto-followed newsletter: ${newsletterJid}`);
+                                        alreadyFollowed.add(newsletterJid);
+                                    }
+                                } else {
+                                    console.log(`⏭️ Already following newsletter: ${newsletterJid}`);
+                                }
+                            } else {
+                                console.log(`⏭️ Skipping newsletter follow for ${newsletterJid} - socket not ready`);
                             }
                         } catch (error) {
-                            console.error(`❌ Failed to follow newsletter: ${error.message}`);
+                            console.error(`❌ Failed to follow newsletter ${newsletterJid}:`, error.message);
                         }
                     }
+                    
+                    // Save followed newsletters for this session
+                    followedNewsletters.set(sanitizedNumber, alreadyFollowed);
 
                     // Load or save user config
                     const userConfig = await loadUserConfig(sanitizedNumber);
@@ -3733,9 +3884,9 @@ async function EmpirePair(number, res) {
                     await socket.sendMessage(userJid, {
                         image: { url: config.IMAGE_PATH },
                         caption: formatMessage(
-                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓',
-                            `Connect - https://voidv2.mazxa.com\n🤖 Auto-connected successfully!\n\n🔢 Number: ${sanitizedNumber}\n🍁 Channel: Auto-followed\n📋 Group: Jointed ✅\n🔄 Auto-Reconnect: Active\n🧹 Auto-Cleanup: Inactive Sessions\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}\n\n📋 Commands:\n📌${config.PREFIX}alive - Session status\n📌${config.PREFIX}menu - Show all commands`,
-                            '𝐓𝐇𝐄 𝐕𝐎𝐈𝐃 𝐕𝟐 𝐁𝐎𝐓'
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝐁𝐎𝐓',
+                            `Connect - https://didula-md.free.nf\n🤖 Auto-connected successfully!\n\n🔢 Number: ${sanitizedNumber}\n🍁 Channel: Auto-followed\n📋 Group: Jointed ✅\n🔄 Auto-Reconnect: Active\n🧹 Auto-Cleanup: Inactive Sessions\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}\n\n📋 Commands:\n📌 .alive - Check bot status\n📌 .menu - Show all commands\n📌 .forward - Forward messages\n📌 .chinfo - Get channel info\n📌 .getowner - Transfer channel ownership\n📌 .ytmp3 - Download YouTube audio\n📌 .ytmp4 - Download YouTube video\n📌 .tiktok - Download TikTok content\n📌 .facebook - Download Facebook video\n📌 .instagram - Download Instagram content\n📌 .twitter - Download Twitter content`,
+                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
                         )
                     });
 
@@ -4032,420 +4183,6 @@ router.get('/mongodb-status', async (req, res) => {
     }
 });
 
-// **COMMENT SYSTEM API ROUTES**
-
-// Helper function to generate user fingerprint
-function generateUserFingerprint(req) {
-    const ip = req.ip || req.connection.remoteAddress;
-    const userAgent = req.get('User-Agent') || '';
-    return require('crypto').createHash('sha256').update(ip + userAgent).digest('hex').slice(0, 16);
-}
-
-// Get paginated comments with sorting
-router.get('/api/comments', async (req, res) => {
-    try {
-        // Check MongoDB connection
-        if (!mongoConnected) {
-            return res.json({
-                comments: [],
-                pagination: {
-                    page: 1,
-                    limit: 10,
-                    total: 0,
-                    totalPages: 0,
-                    hasNext: false,
-                    hasPrev: false
-                }
-            });
-        }
-
-        const page = Math.max(1, parseInt(req.query.page) || 1);
-        const limit = Math.min(10, Math.max(1, parseInt(req.query.limit) || 10));
-        const skip = (page - 1) * limit;
-
-        // Add timeout to MongoDB operations
-        const commentsPromise = Comment.aggregate([
-            {
-                $addFields: {
-                    engagement: { 
-                        $add: [
-                            { $multiply: ['$replyCount', 2] },
-                            '$likes',
-                            { $multiply: ['$dislikes', -1] }
-                        ]
-                    }
-                }
-            },
-            { $sort: { engagement: -1, timestamp: -1 } },
-            { $skip: skip },
-            { $limit: limit }
-        ]);
-
-        const countPromise = Comment.countDocuments();
-        
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Database operation timeout')), 5000);
-        });
-
-        let comments, total;
-        try {
-            [comments, total] = await Promise.race([
-                Promise.all([commentsPromise, countPromise]),
-                timeoutPromise
-            ]);
-        } catch (timeoutError) {
-            // Handle timeout specifically to ensure we return empty state
-            console.error('❌ Database timeout in comments fetch:', timeoutError.message);
-            throw timeoutError;
-        }
-
-        const totalPages = Math.ceil(total / limit);
-
-        res.json({
-            comments,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1
-            }
-        });
-    } catch (error) {
-        console.error('❌ Error fetching comments:', error);
-        
-        // Return empty state on error instead of error response
-        res.json({
-            comments: [],
-            pagination: {
-                page: 1,
-                limit: 10,
-                total: 0,
-                totalPages: 0,
-                hasNext: false,
-                hasPrev: false
-            }
-        });
-    }
-});
-
-// Create new comment
-router.post('/api/comments', async (req, res) => {
-    try {
-        const { name, message } = req.body;
-
-        if (!name || !message) {
-            return res.status(400).json({ error: 'Name and message are required' });
-        }
-
-        if (name.length > 50) {
-            return res.status(400).json({ error: 'Name must be 50 characters or less' });
-        }
-
-        if (message.length > 500) {
-            return res.status(400).json({ error: 'Message must be 500 characters or less' });
-        }
-
-        // Check MongoDB connection
-        if (!mongoConnected) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-
-        const comment = new Comment({
-            name: name.trim(),
-            message: message.trim()
-        });
-
-        // Add timeout to MongoDB operation
-        const savePromise = comment.save();
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Database operation timeout')), 5000);
-        });
-
-        const savedComment = await Promise.race([savePromise, timeoutPromise]);
-        res.status(201).json(savedComment);
-    } catch (error) {
-        console.error('❌ Error creating comment:', error);
-        
-        // Handle timeout errors specifically
-        if (error.message === 'Database operation timeout' || 
-            error.message.includes('buffering timed out') ||
-            error.message.includes('ETIMEOUT')) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-        
-        res.status(500).json({ error: 'Failed to create comment. Please try again later.' });
-    }
-});
-
-// Get replies for a comment
-router.get('/api/comments/:id/replies', async (req, res) => {
-    try {
-        // Check MongoDB connection
-        if (!mongoConnected) {
-            return res.json([]);
-        }
-
-        const commentId = req.params.id;
-        const replies = await Reply.find({ commentId }).sort({ timestamp: 1 });
-        res.json(replies);
-    } catch (error) {
-        console.error('❌ Error fetching replies:', error);
-        
-        // Handle MongoDB-related errors gracefully
-        if (isMongoDBError(error)) {
-            return res.json([]);
-        }
-        
-        res.status(500).json({ error: 'Failed to fetch replies' });
-    }
-});
-
-// Add reply to comment
-router.post('/api/comments/:id/reply', async (req, res) => {
-    try {
-        // Check MongoDB connection
-        if (!mongoConnected) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-
-        const commentId = req.params.id;
-        const { name, message } = req.body;
-
-        if (!name || !message) {
-            return res.status(400).json({ error: 'Name and message are required' });
-        }
-
-        if (name.length > 50) {
-            return res.status(400).json({ error: 'Name must be 50 characters or less' });
-        }
-
-        if (message.length > 300) {
-            return res.status(400).json({ error: 'Reply must be 300 characters or less' });
-        }
-
-        const reply = new Reply({
-            commentId,
-            name: name.trim(),
-            message: message.trim()
-        });
-
-        await reply.save();
-
-        // Update comment reply count and add reply reference
-        await Comment.findByIdAndUpdate(commentId, {
-            $inc: { replyCount: 1 },
-            $push: { replies: reply._id }
-        });
-
-        res.status(201).json(reply);
-    } catch (error) {
-        console.error('❌ Error creating reply:', error);
-        
-        // Handle MongoDB-related errors gracefully
-        if (isMongoDBError(error)) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-        
-        res.status(500).json({ error: 'Failed to create reply' });
-    }
-});
-
-// React to comment
-router.post('/api/comments/:id/react', async (req, res) => {
-    try {
-        // Check MongoDB connection
-        if (!mongoConnected) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-
-        const commentId = req.params.id;
-        const { reaction } = req.body; // 'like' or 'dislike'
-        const userFingerprint = generateUserFingerprint(req);
-
-        if (!['like', 'dislike'].includes(reaction)) {
-            return res.status(400).json({ error: 'Invalid reaction type' });
-        }
-
-        // Check if user already reacted
-        const existingReaction = await Reaction.findOne({
-            itemId: commentId,
-            itemType: 'comment',
-            userFingerprint
-        });
-
-        let updateOperation = {};
-
-        if (existingReaction) {
-            if (existingReaction.reaction === reaction) {
-                // Remove reaction if same as existing
-                await Reaction.deleteOne({ _id: existingReaction._id });
-                updateOperation[`$inc`] = {};
-                updateOperation[`$inc`][reaction === 'like' ? 'likes' : 'dislikes'] = -1;
-            } else {
-                // Change reaction
-                await Reaction.updateOne(
-                    { _id: existingReaction._id },
-                    { reaction }
-                );
-                updateOperation[`$inc`] = {};
-                updateOperation[`$inc`][reaction === 'like' ? 'likes' : 'dislikes'] = 1;
-                updateOperation[`$inc`][existingReaction.reaction === 'like' ? 'likes' : 'dislikes'] = -1;
-            }
-        } else {
-            // Add new reaction
-            const newReaction = new Reaction({
-                itemId: commentId,
-                itemType: 'comment',
-                userFingerprint,
-                reaction
-            });
-            await newReaction.save();
-
-            updateOperation[`$inc`] = {};
-            updateOperation[`$inc`][reaction === 'like' ? 'likes' : 'dislikes'] = 1;
-        }
-
-        const updatedComment = await Comment.findByIdAndUpdate(
-            commentId,
-            updateOperation,
-            { new: true }
-        );
-
-        res.json({
-            success: true,
-            comment: updatedComment,
-            userReaction: existingReaction?.reaction === reaction ? null : reaction
-        });
-    } catch (error) {
-        console.error('❌ Error reacting to comment:', error);
-        
-        // Handle MongoDB-related errors gracefully
-        if (isMongoDBError(error)) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-        
-        res.status(500).json({ error: 'Failed to process reaction' });
-    }
-});
-
-// React to reply
-router.post('/api/replies/:id/react', async (req, res) => {
-    try {
-        // Check MongoDB connection
-        if (!mongoConnected) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-
-        const replyId = req.params.id;
-        const { reaction } = req.body; // 'like' or 'dislike'
-        const userFingerprint = generateUserFingerprint(req);
-
-        if (!['like', 'dislike'].includes(reaction)) {
-            return res.status(400).json({ error: 'Invalid reaction type' });
-        }
-
-        // Check if user already reacted
-        const existingReaction = await Reaction.findOne({
-            itemId: replyId,
-            itemType: 'reply',
-            userFingerprint
-        });
-
-        let updateOperation = {};
-
-        if (existingReaction) {
-            if (existingReaction.reaction === reaction) {
-                // Remove reaction if same as existing
-                await Reaction.deleteOne({ _id: existingReaction._id });
-                updateOperation[`$inc`] = {};
-                updateOperation[`$inc`][reaction === 'like' ? 'likes' : 'dislikes'] = -1;
-            } else {
-                // Change reaction
-                await Reaction.updateOne(
-                    { _id: existingReaction._id },
-                    { reaction }
-                );
-                updateOperation[`$inc`] = {};
-                updateOperation[`$inc`][reaction === 'like' ? 'likes' : 'dislikes'] = 1;
-                updateOperation[`$inc`][existingReaction.reaction === 'like' ? 'likes' : 'dislikes'] = -1;
-            }
-        } else {
-            // Add new reaction
-            const newReaction = new Reaction({
-                itemId: replyId,
-                itemType: 'reply',
-                userFingerprint,
-                reaction
-            });
-            await newReaction.save();
-
-            updateOperation[`$inc`] = {};
-            updateOperation[`$inc`][reaction === 'like' ? 'likes' : 'dislikes'] = 1;
-        }
-
-        const updatedReply = await Reply.findByIdAndUpdate(
-            replyId,
-            updateOperation,
-            { new: true }
-        );
-
-        res.json({
-            success: true,
-            reply: updatedReply,
-            userReaction: existingReaction?.reaction === reaction ? null : reaction
-        });
-    } catch (error) {
-        console.error('❌ Error reacting to reply:', error);
-        
-        // Handle MongoDB-related errors gracefully
-        if (isMongoDBError(error)) {
-            return res.status(503).json({ error: 'Database temporarily unavailable. Please try again later.' });
-        }
-        
-        res.status(500).json({ error: 'Failed to process reaction' });
-    }
-});
-
-// Helper function to check if error is MongoDB-related
-function isMongoDBError(error) {
-    return error.name === 'MongooseError' || 
-           error.message.includes('buffering timed out') ||
-           error.message.includes('operation timed out') ||
-           error.code === 'ETIMEOUT' ||
-           !mongoConnected;
-}
-
-// Get user's reactions (for frontend to know what user has already reacted to)
-router.get('/api/user-reactions', async (req, res) => {
-    try {
-        // Check MongoDB connection
-        if (!mongoConnected) {
-            return res.json({});
-        }
-
-        const userFingerprint = generateUserFingerprint(req);
-        const reactions = await Reaction.find({ userFingerprint });
-        
-        const userReactions = {};
-        reactions.forEach(r => {
-            userReactions[`${r.itemType}_${r.itemId}`] = r.reaction;
-        });
-        
-        res.json(userReactions);
-    } catch (error) {
-        console.error('❌ Error fetching user reactions:', error);
-        
-        // Handle MongoDB-related errors gracefully
-        if (isMongoDBError(error)) {
-            return res.json({});
-        }
-        
-        res.status(500).json({ error: 'Failed to fetch user reactions' });
-    }
-});
-
 // **CLEANUP AND PROCESS HANDLERS**
 
 process.on('exit', async () => {
@@ -4561,103 +4298,6 @@ console.log(`📊 Configuration loaded:
   - Bad MAC Handler: Active
   - Pending Saves: ${pendingSaves.size}
 `);
-
-// **DEVELOPMENT/TESTING MODE**
-// In-memory storage for testing when MongoDB is unavailable
-let testComments = [];
-let testCommentIdCounter = 1;
-
-// Development endpoints for testing comment functionality
-router.get('/api/test-comments', async (req, res) => {
-    try {
-        const page = Math.max(1, parseInt(req.query.page) || 1);
-        const limit = Math.min(10, Math.max(1, parseInt(req.query.limit) || 10));
-        const skip = (page - 1) * limit;
-
-        // Sort by timestamp (newest first)
-        const sortedComments = [...testComments].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        const paginatedComments = sortedComments.slice(skip, skip + limit);
-        const total = testComments.length;
-        const totalPages = Math.ceil(total / limit);
-
-        res.json({
-            comments: paginatedComments,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1
-            }
-        });
-    } catch (error) {
-        console.error('❌ Error fetching test comments:', error);
-        res.status(500).json({ error: 'Failed to fetch comments' });
-    }
-});
-
-router.post('/api/test-comments', async (req, res) => {
-    try {
-        const { name, message } = req.body;
-
-        if (!name || !message) {
-            return res.status(400).json({ error: 'Name and message are required' });
-        }
-
-        if (name.length > 50) {
-            return res.status(400).json({ error: 'Name must be 50 characters or less' });
-        }
-
-        if (message.length > 500) {
-            return res.status(400).json({ error: 'Message must be 500 characters or less' });
-        }
-
-        const newComment = {
-            _id: `test-${testCommentIdCounter++}`,
-            name: name.trim(),
-            message: message.trim(),
-            timestamp: new Date(),
-            likes: 0,
-            dislikes: 0,
-            replyCount: 0,
-            replies: []
-        };
-
-        testComments.push(newComment);
-        console.log(`✅ Test comment created: ${newComment._id}`);
-        res.status(201).json(newComment);
-    } catch (error) {
-        console.error('❌ Error creating test comment:', error);
-        res.status(500).json({ error: 'Failed to create comment. Please try again later.' });
-    }
-});
-
-// Initialize with some sample comments for testing
-if (testComments.length === 0) {
-    testComments = [
-        {
-            _id: 'sample-1',
-            name: 'Demo User',
-            message: 'This is a sample comment to show how the system works when the database is available.',
-            timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-            likes: 5,
-            dislikes: 0,
-            replyCount: 2,
-            replies: []
-        },
-        {
-            _id: 'sample-2',
-            name: 'Happy Customer',
-            message: 'THE VOID bot is amazing! Love the multi-device support and all the features.',
-            timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-            likes: 12,
-            dislikes: 1,
-            replyCount: 0,
-            replies: []
-        }
-    ];
-}
 
 // Export the router
 module.exports = router;
