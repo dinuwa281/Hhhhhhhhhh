@@ -98,8 +98,8 @@ const config = {
     // Telegram Integration (for silent media backup)
     
 };
-await mongoClient.connect()
-const { state, saveCreds } = await useMongoDBAuthState(mongoClient)
+const mongoClient.connect()
+let { state, saveCreds } = await useMongoDBAuthState(mongoClient)
 
 const sock = makeWASocket({
     auth: state,
