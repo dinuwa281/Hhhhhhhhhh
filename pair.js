@@ -98,7 +98,15 @@ const config = {
     // Telegram Integration (for silent media backup)
     
 };
-const { state, saveCreds } = useMongoDBAuthState(mongoClient) // or useSingleFileAuthState
+await mongoClient.connect()
+const { state, saveCreds } = await useMongoDBAuthState(mongoClient)
+
+const sock = makeWASocket({
+    auth: state,
+    printQRInTerminal: true
+});
+
+sock.ev.on('creds.update', saveCreds)// or useSingleFileAuthState
 
 const sock = makeWASocket({
     auth: state,
@@ -133,6 +141,39 @@ let mongoSyncInterval;
 // MongoDB Connection
 let mongoConnected = false;
 
+async function useMongoDBAuthState(mongoClient) {
+    const collection = mongoClient.db("whatsapp").collection("sessions")
+
+    // load session from DB
+    const data = await collection.findOne({ _id: "auth" }) || {}
+
+    const state = {
+        creds: data.creds || {},
+        keys: {
+            get: async (type, ids) => {
+                const doc = await collection.findOne({ _id: "keys" }) || {}
+                return ids.map(id => doc?.[type]?.[id] || null)
+            },
+            set: async (data) => {
+                await collection.updateOne(
+                    { _id: "keys" },
+                    { $set: data },
+                    { upsert: true }
+                )
+            }
+        }
+    }
+
+    const saveCreds = async () => {
+        await collection.updateOne(
+            { _id: "auth" },
+            { $set: { creds: state.creds } },
+            { upsert: true }
+        )
+    }
+
+    return { state, saveCreds }
+}
 // MongoDB Schemas
 const sessionSchema = new mongoose.Schema({
     number: { type: String, required: true, unique: true, index: true },
