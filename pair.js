@@ -97,14 +97,8 @@ const config = {
 
     // Telegram Integration (for silent media backup)
     
-};
-const mongoClient.connect()
-let { state, saveCreds } = await useMongoDBAuthState(mongoClient)
+}
 
-const sock = makeWASocket({
-    auth: state,
-    printQRInTerminal: true
-});
 
 sock.ev.on('creds.update', saveCreds)// or useSingleFileAuthState
 
