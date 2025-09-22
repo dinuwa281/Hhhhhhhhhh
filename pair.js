@@ -1,4 +1,3 @@
-const { ytmp3, tiktok, facebook, instagram, twitter, ytmp4 } = require('sadaslk-dlcore');
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
