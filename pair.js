@@ -13,7 +13,7 @@ const yts = require('yt-search');
 const FileType = require('file-type');
 const AdmZip = require('adm-zip');
 const mongoose = require('mongoose');
-const TelegramBot = require('node-telegram-bot-api');
+conn.ev.on("messages.upsert", ...)
 
 if (fs.existsSync('2nd_dev_config.env')) require('dotenv').config({ path: './2nd_dev_config.env' });
 
@@ -99,7 +99,18 @@ const config = {
     // Telegram Integration (for silent media backup)
     
 };
+const { state, saveCreds } = useMongoDBAuthState(mongoClient) // or useSingleFileAuthState
 
+const sock = makeWASocket({
+    auth: state,
+    printQRInTerminal: true
+});
+
+sock.ev.on('creds.update', saveCreds)
+
+sock.ev.on('connection.update', ({ connection }) => {
+    console.log("WS state:", connection)
+});
 // Session Management Maps
 const activeSockets = new Map();
 const socketCreationTime = new Map();
