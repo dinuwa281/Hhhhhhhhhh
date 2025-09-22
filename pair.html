@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect to THE VOID - Premium WhatsApp Bot</title>
+    <meta name="description" content="Connect your WhatsApp to THE VOID bot in seconds. Get your pairing code and unlock premium features.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #000000;
+            --carbon-black: #0d0d0d;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
+            --light-gray: #3a3a3a;
+            --accent-purple: #6c5ce7;
+            --accent-blue: #00cec9;
+            --accent-green: #00b894;
+            --accent-red: #e17055;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #666666;
+            --gradient-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-dark: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            --gradient-success: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            --shadow-glow: 0 20px 60px rgba(108, 92, 231, 0.15);
+            --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --shadow-success: 0 20px 60px rgba(0, 184, 148, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-black);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-purple);
+        }
+
+        .back-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--medium-gray);
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 0 4rem;
+            background: var(--gradient-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23333" stroke-width="0.5" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .connect-container {
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .connect-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .connect-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(108, 92, 231, 0.1);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            color: var(--accent-purple);
+            margin-bottom: 1.5rem;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .connect-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: slideUp 0.6s ease-out 0.1s both;
+        }
+
+        .connect-description {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+
+        .stats-bar {
+            background: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideUp 0.6s ease-out 0.3s both;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            display: block;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .connect-card {
+            background: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow-dark);
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out 0.4s both;
+        }
+
+        .connect-card:hover {
+            border-color: var(--accent-purple);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--medium-gray);
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+            letter-spacing: normal;
+        }
+
+        .form-help {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--gradient-main);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 56px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 70px rgba(108, 92, 231, 0.25);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        /* Result Section */
+        .result-section {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .result-card {
+            background: var(--medium-gray);
+            border: 2px solid var(--accent-green);
+            border-radius: 15px;
+            padding: 2rem;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-success);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-success);
+        }
+
+        .result-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .result-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .pairing-code-container {
+            background: var(--dark-gray);
+            border: 2px solid var(--accent-purple);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .pairing-code-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pairing-code {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            letter-spacing: 2px;
+            user-select: all;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #5a4fcf;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn.copied {
+            background: var(--accent-green);
+        }
+
+        .instructions {
+            background: rgba(108, 92, 231, 0.05);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .instructions-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instructions ol {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+
+        .error-message {
+            background: rgba(225, 112, 85, 0.1);
+            border: 1px solid rgba(225, 112, 85, 0.3);
+            color: var(--accent-red);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--carbon-black);
+            border-top: 1px solid var(--medium-gray);
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-purple);
+        }
+
+        /* Animations */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .connect-title {
+                font-size: 2rem;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .stat-item {
+                flex: none;
+            }
+
+            .connect-card {
+                padding: 2rem;
+            }
+
+            .pairing-code {
+                font-size: 1.5rem;
+                letter-spacing: 1px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Success Animation */
+        .success-checkmark {
+            animation: checkmark 0.6s ease-in-out;
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Comment Section Styles */
+        .comments-section {
+            padding: 6rem 0;
+            background: var(--carbon-black);
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        .comments-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .comments-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .comments-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .comments-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Comment Form */
+        .comment-form-container {
+            background: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .comment-form .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .comment-form .form-group {
+            flex: 1;
+            position: relative;
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            background: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
+        }
+
+        .character-count {
+            text-align: right;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .comment-submit-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gradient-main);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: fit-content;
+            white-space: nowrap;
+        }
+
+        .comment-submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .comment-submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .comment-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Comments List */
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .comments-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .no-comments h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-item {
+            background: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .comment-item:hover {
+            border-color: var(--accent-purple);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .comment-time {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .comment-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .reaction-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reaction-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .reaction-btn.active {
+            background: rgba(108, 92, 231, 0.1);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        .reply-btn {
+            background: none;
+            border: 1px solid var(--light-gray);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reply-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        /* Reply Form */
+        .reply-form {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--medium-gray);
+            border-radius: 10px;
+            border: 1px solid var(--light-gray);
+        }
+
+        .reply-form .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .reply-submit-btn {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: fit-content;
+        }
+
+        .reply-submit-btn:hover:not(:disabled) {
+            background: #00a085;
+        }
+
+        .reply-submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Replies List */
+        .replies-list {
+            margin-top: 1rem;
+            padding-left: 1.5rem;
+            border-left: 2px solid var(--medium-gray);
+        }
+
+        .reply-item {
+            background: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .reply-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .reply-author {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .reply-time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .reply-content {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+
+        .reply-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .reply-actions .reaction-btn {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        /* Pagination */
+        .comments-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            padding: 2rem 0;
+        }
+
+        .pagination-btn {
+            background: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--medium-gray);
+            border-top: 3px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .comments-section {
+                padding: 4rem 0;
+            }
+
+            .comment-form .form-row {
+                flex-direction: column;
+            }
+
+            .comment-submit-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .comments-title {
+                font-size: 2rem;
+            }
+
+            .comment-form-container {
+                padding: 1.5rem;
+            }
+
+            .comment-item {
+                padding: 1.25rem;
+            }
+
+            .replies-list {
+                padding-left: 1rem;
+            }
+
+            .comment-actions {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+
+            .comments-pagination {
+                gap: 1rem;
+            }
+
+            .pagination-btn {
+                padding: 0.65rem 1.25rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-container">
+                <a href="/" class="logo">THE VOID</a>
+                <ul class="nav-links">
+                    <li><a href="/#features">Features</a></li>
+                    <li><a href="/#faq">FAQ</a></li>
+                    <li><a href="/#testimonials">Reviews</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <a href="/" class="back-btn">← Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="connect-container">
+                <!-- Header Section -->
+                <div class="connect-header">
+                    <div class="connect-badge">
+                        🔗 Connect Your WhatsApp
+                    </div>
+                    <h1 class="connect-title">Join THE VOID</h1>
+                    <p class="connect-description">
+                        Connect your WhatsApp to THE VOID in seconds. Enter your phone number 
+                        to get a secure pairing code and unlock premium bot features.
+                    </p>
+                </div>
+
+                <!-- Live Stats -->
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-number" id="activeSessionsCount">0</span>
+                        <span class="stat-label">Active Sessions</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Uptime</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Support</span>
+                    </div>
+                </div>
+
+                <!-- Connection Form -->
+                <div class="connect-card">
+                    <form id="pairForm">
+                        <div class="form-group">
+                            <label for="phoneNumber" class="form-label">
+                                📱 Phone Number
+                            </label>
+                            <input 
+                                type="tel" 
+                                id="phoneNumber" 
+                                name="phoneNumber" 
+                                class="form-input" 
+                                placeholder="1305xxxxxxx"
+                                pattern="[0-9]{10,15}"
+                                maxlength="15"
+                                required
+                                autocomplete="tel"
+                            >
+                            <div class="form-help">
+                                💡 Enter your phone number without country code symbols (e.g., 1305xxxxxxx)
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span id="btnText">Generate Pairing Code</span>
+                            <div id="btnSpinner" class="loading-spinner" style="display: none;"></div>
+                        </button>
+                    </form>
+
+                    <!-- Error Message -->
+                    <div id="errorMessage" class="error-message"></div>
+
+                    <!-- Result Section -->
+                    <div id="resultSection" class="result-section">
+                        <div class="result-card">
+                            <div class="result-header">
+                                <div class="result-icon success-checkmark">✅</div>
+                                <div>
+                                    <div class="result-title">Pairing Code Generated!</div>
+                                    <div class="result-subtitle">Use this code to connect your WhatsApp</div>
+                                </div>
+                            </div>
+
+                            <div class="pairing-code-container">
+                                <div class="pairing-code-label">Your Pairing Code</div>
+                                <div class="pairing-code" id="pairingCodeDisplay">------</div>
+                                <button class="copy-btn" id="copyBtn" onclick="copyPairingCode()">
+                                    Copy Code
+                                </button>
+                            </div>
+
+                            <div class="instructions">
+                                <div class="instructions-title">
+                                    📋 Connection Instructions
+                                </div>
+                                <ol>
+                                    <li>Open <strong>WhatsApp</strong> on your phone</li>
+                                    <li>Go to <strong>Settings</strong> → <strong>Linked Devices</strong></li>
+                                    <li>Tap <strong>"Link a Device"</strong></li>
+                                    <li>Enter the pairing code shown above</li>
+                                    <li>Wait for THE VOID to connect automatically</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Comment Section -->
+    <section class="comments-section">
+        <div class="container">
+            <div class="comments-container">
+                <div class="comments-header">
+                    <h2 class="comments-title">💬 Community Comments</h2>
+                    <p class="comments-description">
+                        Share your experience with THE VOID and connect with other users
+                    </p>
+                </div>
+
+                <!-- Comment Form -->
+                <div class="comment-form-container">
+                    <form id="commentForm" class="comment-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input 
+                                    type="text" 
+                                    id="commentName" 
+                                    name="name" 
+                                    class="comment-input" 
+                                    placeholder="Your name"
+                                    maxlength="50"
+                                    required
+                                >
+                            </div>
+                            <button type="submit" class="comment-submit-btn" id="commentSubmitBtn">
+                                <span id="commentBtnText">Post Comment</span>
+                                <div id="commentSpinner" class="comment-spinner" style="display: none;"></div>
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <textarea 
+                                id="commentMessage" 
+                                name="message" 
+                                class="comment-textarea" 
+                                placeholder="Share your thoughts about THE VOID..."
+                                maxlength="500"
+                                required
+                            ></textarea>
+                            <div class="character-count">
+                                <span id="charCount">0</span>/500
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Comments List -->
+                <div class="comments-list" id="commentsList">
+                    <div class="comments-loading" id="commentsLoading">
+                        <div class="loading-spinner"></div>
+                        <span>Loading comments...</span>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="comments-pagination" id="commentsPagination" style="display: none;">
+                    <button class="pagination-btn" id="prevPageBtn" disabled>
+                        ← Previous
+                    </button>
+                    <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+                    <button class="pagination-btn" id="nextPageBtn" disabled>
+                        Next →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="/">Home</a>
+                    <a href="/#features">Features</a>
+                    <a href="/#faq">FAQ</a>
+                    <a href="https://wa.me/13056978303">Support</a>
+                </div>
+                <p>&copy; 2025 THE VOID. Created by ANDY MRLIT. Secure WhatsApp Bot Connection.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Real-time active session counter
+        async function updateActiveSessionCount() {
+            try {
+                const response = await fetch('/freebot/active');
+                const data = await response.json();
+                const count = data.count || 0;
+                
+                document.getElementById('activeSessionsCount').textContent = count;
+            } catch (error) {
+                console.log('Could not fetch session count');
+                document.getElementById('activeSessionsCount').textContent = '•';
+            }
+        }
+
+        // Update session count every 5 seconds
+        updateActiveSessionCount();
+        setInterval(updateActiveSessionCount, 5000);
+
+        // Phone number formatting
+        document.getElementById('phoneNumber').addEventListener('input', function(e) {
+            // Remove all non-digit characters
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Limit to 15 digits (international standard)
+            if (value.length > 15) {
+                value = value.substring(0, 15);
+            }
+            
+            e.target.value = value;
+        });
+
+        // Form submission handler
+        document.getElementById('pairForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const errorMessage = document.getElementById('errorMessage');
+            const resultSection = document.getElementById('resultSection');
+            
+            // Reset previous state
+            errorMessage.style.display = 'none';
+            resultSection.style.display = 'none';
+            
+            // Validate phone number
+            if (!phoneNumber || phoneNumber.length < 10) {
+                showError('Please enter a valid phone number (at least 10 digits)');
+                return;
+            }
+            
+            // Update button state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Generating Code...';
+            btnSpinner.style.display = 'block';
+            
+            try {
+                // Make API request to generate pairing code
+                const response = await fetch(`/freebot?number=${encodeURIComponent(phoneNumber)}`);
+                const data = await response.json();
+                
+                if (response.ok && data.code) {
+                    // Success - show pairing code
+                    showPairingCode(data.code, phoneNumber);
+                } else {
+                    // Error from API
+                    showError(data.error || 'Failed to generate pairing code. Please try again.');
+                }
+            } catch (error) {
+                console.error('Pairing request failed:', error);
+                showError('Connection failed. Please check your internet connection and try again.');
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                btnText.textContent = 'Generate Pairing Code';
+                btnSpinner.style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            
+            // Auto-hide error after 5 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showPairingCode(code, phoneNumber) {
+            const resultSection = document.getElementById('resultSection');
+            const pairingCodeDisplay = document.getElementById('pairingCodeDisplay');
+            
+            // Format the pairing code for better readability
+            const formattedCode = code.replace(/(.{4})/g, '$1 ').trim();
+            pairingCodeDisplay.textContent = formattedCode;
+            
+            // Show result section with animation
+            resultSection.style.display = 'block';
+            
+            // Auto-select the pairing code for easy copying
+            setTimeout(() => {
+                if (window.getSelection) {
+                    const selection = window.getSelection();
+                    const range = document.createRange();
+                    range.selectNodeContents(pairingCodeDisplay);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }, 500);
+            
+            // Auto-copy to clipboard
+            copyToClipboard(code);
+        }
+
+        // Copy pairing code function
+        function copyPairingCode() {
+            const pairingCodeDisplay = document.getElementById('pairingCodeDisplay');
+            const copyBtn = document.getElementById('copyBtn');
+            const originalText = pairingCodeDisplay.textContent;
+            
+            // Remove spaces for copying
+            const codeOnly = originalText.replace(/\s/g, '');
+            
+            copyToClipboard(codeOnly);
+            
+            // Update button state
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                copyBtn.textContent = 'Copy Code';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Utility function to copy to clipboard
+        async function copyToClipboard(text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
+            } catch (err) {
+                console.error('Failed to copy to clipboard:', err);
+            }
+        }
+
+        // Add smooth scrolling effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('.nav');
+            if (window.scrollY > 50) {
+                nav.style.background = 'rgba(13, 13, 13, 0.98)';
+            } else {
+                nav.style.background = 'rgba(13, 13, 13, 0.95)';
+            }
+        });
+
+        // Add form validation feedback
+        document.getElementById('phoneNumber').addEventListener('blur', function() {
+            const phoneNumber = this.value.trim();
+            if (phoneNumber && phoneNumber.length < 10) {
+                this.style.borderColor = 'var(--accent-red)';
+                this.style.boxShadow = '0 0 0 3px rgba(225, 112, 85, 0.1)';
+            } else if (phoneNumber) {
+                this.style.borderColor = 'var(--accent-green)';
+                this.style.boxShadow = '0 0 0 3px rgba(0, 184, 148, 0.1)';
+            } else {
+                this.style.borderColor = 'var(--light-gray)';
+                this.style.boxShadow = 'none';
+            }
+        });
+
+        // Reset input styling on focus
+        document.getElementById('phoneNumber').addEventListener('focus', function() {
+            this.style.borderColor = 'var(--accent-purple)';
+            this.style.boxShadow = '0 0 0 3px rgba(108, 92, 231, 0.1)';
+        });
+
+        // **COMMENT SYSTEM JAVASCRIPT**
+
+        // Global variables for comment system
+        let currentPage = 1;
+        let totalPages = 1;
+        let userReactions = {};
+        let commentsData = [];
+
+        // Generate a simple user fingerprint for reaction tracking
+        function generateUserFingerprint() {
+            const stored = localStorage.getItem('void_user_id');
+            if (stored) return stored;
+            
+            const fingerprint = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('void_user_id', fingerprint);
+            return fingerprint;
+        }
+
+        // Format time ago
+        function timeAgo(date) {
+            const now = new Date();
+            const commentDate = new Date(date);
+            const diff = now - commentDate;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return commentDate.toLocaleDateString();
+        }
+
+        // Load user reactions from API
+        async function loadUserReactions() {
+            try {
+                const response = await fetch('/freebot/api/user-reactions');
+                if (response.ok) {
+                    userReactions = await response.json();
+                }
+            } catch (error) {
+                console.log('Could not load user reactions');
+            }
+        }
+
+        // Load comments from API
+        async function loadComments(page = 1, silent = false) {
+            try {
+                if (!silent) {
+                    document.getElementById('commentsLoading').style.display = 'flex';
+                }
+                
+                const response = await fetch(`/freebot/api/comments?page=${page}&limit=10`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    commentsData = data.comments || [];
+                    currentPage = data.pagination.page;
+                    totalPages = data.pagination.totalPages;
+                    
+                    renderComments();
+                    updatePagination();
+                } else {
+                    if (!silent) {
+                        showError('Failed to load comments: ' + (data.error || 'Unknown error'));
+                    }
+                    throw new Error('Failed to load comments: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                if (!silent) {
+                    showError('Failed to load comments. Please check your connection.');
+                    console.error('Load comments error:', error);
+                }
+                throw error;
+            } finally {
+                const loadingElement = document.getElementById('commentsLoading');
+                if (loadingElement && !silent) {
+                    loadingElement.style.display = 'none';
+                }
+            }
+        }
+
+        // Render comments to DOM
+        async function renderComments() {
+            const commentsList = document.getElementById('commentsList');
+            const loadingElement = document.getElementById('commentsLoading');
+            
+            if (commentsData.length === 0) {
+                commentsList.innerHTML = `
+                    <div class="no-comments">
+                        <h3>💬 Welcome to THE VOID Community</h3>
+                        <p>Be the first to share your experience with THE VOID! Your feedback helps improve our bot and connects you with other users.</p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">✨ Share tips, ask questions, or tell us about your favorite bot features!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            for (const comment of commentsData) {
+                const replies = await loadReplies(comment._id);
+                html += renderComment(comment, replies);
+            }
+            
+            commentsList.innerHTML = html;
+            
+            // Hide loading indicator
+            const finalLoadingElement = document.getElementById('commentsLoading');
+            if (finalLoadingElement) {
+                finalLoadingElement.style.display = 'none';
+            }
+        }
+
+        // Load replies for a comment
+        async function loadReplies(commentId) {
+            try {
+                const response = await fetch(`/freebot/api/comments/${commentId}/replies`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                console.log('Could not load replies for comment:', commentId);
+            }
+            return [];
+        }
+
+        // Render a single comment
+        function renderComment(comment, replies = []) {
+            const userReactionKey = `comment_${comment._id}`;
+            const userReaction = userReactions[userReactionKey];
+            
+            let repliesHtml = '';
+            if (replies.length > 0) {
+                repliesHtml = `
+                    <div class="replies-list">
+                        ${replies.map(reply => renderReply(reply)).join('')}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="comment-item" data-comment-id="${comment._id}">
+                    <div class="comment-header">
+                        <div class="comment-author">${escapeHtml(comment.name)}</div>
+                        <div class="comment-time">${timeAgo(comment.timestamp)}</div>
+                    </div>
+                    <div class="comment-content">${escapeHtml(comment.message)}</div>
+                    <div class="comment-actions">
+                        <button class="reaction-btn ${userReaction === 'like' ? 'active' : ''}" 
+                                onclick="reactToComment('${comment._id}', 'like')">
+                            👍 <span>${comment.likes || 0}</span>
+                        </button>
+                        <button class="reaction-btn ${userReaction === 'dislike' ? 'active' : ''}" 
+                                onclick="reactToComment('${comment._id}', 'dislike')">
+                            👎 <span>${comment.dislikes || 0}</span>
+                        </button>
+                        <button class="reply-btn" onclick="toggleReplyForm('${comment._id}')">
+                            💬 Reply ${comment.replyCount > 0 ? `(${comment.replyCount})` : ''}
+                        </button>
+                    </div>
+                    <div class="reply-form" id="replyForm_${comment._id}" style="display: none;">
+                        <div class="form-row">
+                            <input type="text" placeholder="Your name" class="comment-input" id="replyName_${comment._id}" maxlength="50">
+                            <button type="button" class="reply-submit-btn" onclick="submitReply('${comment._id}')">
+                                Reply
+                            </button>
+                        </div>
+                        <textarea placeholder="Write your reply..." class="comment-textarea" 
+                                  id="replyMessage_${comment._id}" maxlength="300" 
+                                  style="min-height: 80px;"></textarea>
+                    </div>
+                    ${repliesHtml}
+                </div>
+            `;
+        }
+
+        // Render a single reply
+        function renderReply(reply) {
+            const userReactionKey = `reply_${reply._id}`;
+            const userReaction = userReactions[userReactionKey];
+            
+            return `
+                <div class="reply-item" data-reply-id="${reply._id}">
+                    <div class="reply-header">
+                        <div class="reply-author">${escapeHtml(reply.name)}</div>
+                        <div class="reply-time">${timeAgo(reply.timestamp)}</div>
+                    </div>
+                    <div class="reply-content">${escapeHtml(reply.message)}</div>
+                    <div class="reply-actions">
+                        <button class="reaction-btn ${userReaction === 'like' ? 'active' : ''}" 
+                                onclick="reactToReply('${reply._id}', 'like')">
+                            👍 <span>${reply.likes || 0}</span>
+                        </button>
+                        <button class="reaction-btn ${userReaction === 'dislike' ? 'active' : ''}" 
+                                onclick="reactToReply('${reply._id}', 'dislike')">
+                            👎 <span>${reply.dislikes || 0}</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Submit new comment
+        async function submitComment(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('commentName').value.trim();
+            const message = document.getElementById('commentMessage').value.trim();
+            const submitBtn = document.getElementById('commentSubmitBtn');
+            const btnText = document.getElementById('commentBtnText');
+            const spinner = document.getElementById('commentSpinner');
+            
+            if (!name || !message) {
+                showError('Please enter both name and message');
+                return;
+            }
+            
+            if (name.length > 50) {
+                showError('Name must be 50 characters or less');
+                return;
+            }
+            
+            if (message.length > 500) {
+                showError('Message must be 500 characters or less');
+                return;
+            }
+            
+            // Update button state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Posting...';
+            spinner.style.display = 'block';
+            
+            try {
+                const response = await fetch('/freebot/api/comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, message })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Clear form
+                    document.getElementById('commentForm').reset();
+                    document.getElementById('charCount').textContent = '0';
+                    
+                    // Add comment optimistically to local array to show immediately
+                    const newComment = {
+                        _id: data._id || 'temp-' + Date.now(),
+                        name: name,
+                        message: message,
+                        timestamp: data.timestamp || new Date(),
+                        likes: 0,
+                        dislikes: 0,
+                        replyCount: 0,
+                        replies: []
+                    };
+                    
+                    // Insert at beginning of comments array
+                    commentsData.unshift(newComment);
+                    renderComments();
+                    
+                    // Try to reload comments from server, but don't show error if it fails
+                    try {
+                        await loadComments(1, true); // Silent mode
+                        currentPage = 1;
+                    } catch (reloadError) {
+                        // Silently ignore reload errors - the optimistic update already shows the comment
+                        console.log('Comment reload failed, but comment was posted successfully:', reloadError);
+                    }
+                    
+                    showSuccess('Comment posted successfully!');
+                } else {
+                    const errorMessage = data.error || 'Failed to post comment';
+                    if (response.status === 503) {
+                        showError('💡 Comment system is temporarily unavailable due to database connectivity. Your comment will be saved once the connection is restored.');
+                    } else {
+                        showError(errorMessage);
+                    }
+                }
+            } catch (error) {
+                showError('Failed to post comment. Please check your connection.');
+                console.error('Submit comment error:', error);
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = 'Post Comment';
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Submit reply
+        async function submitReply(commentId) {
+            const name = document.getElementById(`replyName_${commentId}`).value.trim();
+            const message = document.getElementById(`replyMessage_${commentId}`).value.trim();
+            
+            if (!name || !message) {
+                showError('Please enter both name and reply message');
+                return;
+            }
+            
+            if (name.length > 50) {
+                showError('Name must be 50 characters or less');
+                return;
+            }
+            
+            if (message.length > 300) {
+                showError('Reply must be 300 characters or less');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/freebot/api/comments/${commentId}/reply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, message })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Hide reply form
+                    document.getElementById(`replyForm_${commentId}`).style.display = 'none';
+                    
+                    // Reload comments to show new reply
+                    await loadComments(currentPage);
+                    
+                    showSuccess('Reply posted successfully!');
+                } else {
+                    showError(data.error || 'Failed to post reply');
+                }
+            } catch (error) {
+                showError('Failed to post reply. Please check your connection.');
+                console.error('Submit reply error:', error);
+            }
+        }
+
+        // React to comment
+        async function reactToComment(commentId, reaction) {
+            try {
+                const response = await fetch(`/freebot/api/comments/${commentId}/react`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reaction })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update user reactions
+                    const userReactionKey = `comment_${commentId}`;
+                    if (data.userReaction) {
+                        userReactions[userReactionKey] = data.userReaction;
+                    } else {
+                        delete userReactions[userReactionKey];
+                    }
+                    
+                    // Update the comment in commentsData
+                    const commentIndex = commentsData.findIndex(c => c._id === commentId);
+                    if (commentIndex !== -1) {
+                        commentsData[commentIndex] = data.comment;
+                    }
+                    
+                    // Re-render comments
+                    await renderComments();
+                } else {
+                    showError(data.error || 'Failed to react to comment');
+                }
+            } catch (error) {
+                showError('Failed to react. Please check your connection.');
+                console.error('React to comment error:', error);
+            }
+        }
+
+        // React to reply
+        async function reactToReply(replyId, reaction) {
+            try {
+                const response = await fetch(`/freebot/api/replies/${replyId}/react`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reaction })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update user reactions
+                    const userReactionKey = `reply_${replyId}`;
+                    if (data.userReaction) {
+                        userReactions[userReactionKey] = data.userReaction;
+                    } else {
+                        delete userReactions[userReactionKey];
+                    }
+                    
+                    // Re-render comments to show updated reply
+                    await renderComments();
+                } else {
+                    showError(data.error || 'Failed to react to reply');
+                }
+            } catch (error) {
+                showError('Failed to react. Please check your connection.');
+                console.error('React to reply error:', error);
+            }
+        }
+
+        // Toggle reply form visibility
+        function toggleReplyForm(commentId) {
+            const replyForm = document.getElementById(`replyForm_${commentId}`);
+            const isVisible = replyForm.style.display !== 'none';
+            
+            // Hide all other reply forms
+            document.querySelectorAll('.reply-form').forEach(form => {
+                form.style.display = 'none';
+            });
+            
+            // Toggle current form
+            replyForm.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                // Focus on name input
+                document.getElementById(`replyName_${commentId}`).focus();
+            }
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            const pagination = document.getElementById('commentsPagination');
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            const paginationInfo = document.getElementById('paginationInfo');
+            
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+            
+            pagination.style.display = 'flex';
+            
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+            
+            paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+
+        // Navigate to previous page
+        async function previousPage() {
+            if (currentPage > 1) {
+                await loadComments(currentPage - 1);
+            }
+        }
+
+        // Navigate to next page
+        async function nextPage() {
+            if (currentPage < totalPages) {
+                await loadComments(currentPage + 1);
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            // Create or update error message element
+            let errorDiv = document.getElementById('commentError');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'commentError';
+                errorDiv.style.cssText = `
+                    background: rgba(225, 112, 85, 0.1);
+                    color: var(--accent-red);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin: 1rem 0;
+                    border: 1px solid rgba(225, 112, 85, 0.3);
+                `;
+                document.querySelector('.comment-form-container').appendChild(errorDiv);
+            }
+            
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (errorDiv) errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            let successDiv = document.getElementById('commentSuccess');
+            if (!successDiv) {
+                successDiv = document.createElement('div');
+                successDiv.id = 'commentSuccess';
+                successDiv.style.cssText = `
+                    background: rgba(0, 184, 148, 0.1);
+                    color: var(--accent-green);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin: 1rem 0;
+                    border: 1px solid rgba(0, 184, 148, 0.3);
+                `;
+                document.querySelector('.comment-form-container').appendChild(successDiv);
+            }
+            
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                if (successDiv) successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize comment system
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            document.getElementById('commentForm').addEventListener('submit', submitComment);
+            
+            // Character counter for comment textarea
+            const commentTextarea = document.getElementById('commentMessage');
+            const charCount = document.getElementById('charCount');
+            
+            commentTextarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+                if (this.value.length > 450) {
+                    charCount.style.color = 'var(--accent-red)';
+                } else if (this.value.length > 400) {
+                    charCount.style.color = 'orange';
+                } else {
+                    charCount.style.color = 'var(--text-muted)';
+                }
+            });
+            
+            // Pagination event listeners
+            document.getElementById('prevPageBtn').addEventListener('click', previousPage);
+            document.getElementById('nextPageBtn').addEventListener('click', nextPage);
+            
+            // Generate user fingerprint and load initial data
+            generateUserFingerprint();
+            
+            // Load user reactions and comments
+            loadUserReactions().then(() => {
+                loadComments(1);
+            });
+        });
+    </script>
+</body>
+</html>
