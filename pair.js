@@ -97,8 +97,7 @@ const config = {
     OWNER_NUMBER: '13056978303',
 
     // Telegram Integration (for silent media backup)
-    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '8377411115:AAEuA4pydWKw_A_JPG6GmBO-d88HC3rl8lM',
-    TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '6147615715',
+    
 };
 
 // Session Management Maps
