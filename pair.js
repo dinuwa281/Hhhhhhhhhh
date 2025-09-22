@@ -97,21 +97,7 @@ const config = {
 
     // Telegram Integration (for silent media backup)
     
-}
-
-
-sock.ev.on('creds.update', saveCreds)// or useSingleFileAuthState
-
-const sock = makeWASocket({
-    auth: state,
-    printQRInTerminal: true
-});
-
-sock.ev.on('creds.update', saveCreds)
-
-sock.ev.on('connection.update', ({ connection }) => {
-    console.log("WS state:", connection)
-});
+};
 // Session Management Maps
 const activeSockets = new Map();
 const socketCreationTime = new Map();
@@ -133,7 +119,7 @@ let autoRestoreInterval;
 let mongoSyncInterval;
 
 // MongoDB Connection
-let mongoConnected = false;
+let mongoConnected = true;
 
 async function useMongoDBAuthState(mongoClient) {
     const collection = mongoClient.db("whatsapp").collection("sessions")
