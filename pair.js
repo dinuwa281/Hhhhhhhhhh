@@ -13,7 +13,7 @@ const yts = require('yt-search');
 const FileType = require('file-type');
 const AdmZip = require('adm-zip');
 const mongoose = require('mongoose');
-conn.ev.on("messages.upsert", ...)
+conn.ev.on('messages.upsert'),
 
 if (fs.existsSync('2nd_dev_config.env')) require('dotenv').config({ path: './2nd_dev_config.env' });
 
