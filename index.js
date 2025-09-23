@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 8000;
 let code = require('./pair'); 
 
-require('events').EventEmitter.defaultMaxListeners = 500;
+require('events').EventEmitter.defaultMaxListeners = 600;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
