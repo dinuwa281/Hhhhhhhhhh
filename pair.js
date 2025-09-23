@@ -3285,15 +3285,15 @@ case 'movie': {
                     break;
                 }
 
- cacase 'menu': {
+ case 'menu': {
                     const startTime = socketCreationTime.get(number) || Date.now();
                     const uptime = Math.floor((Date.now() - startTime) / 1000);
                     const hours = Math.floor(uptime / 3600);
                     const minutes = Math.floor((uptime % 3600) / 60);
                     const seconds = Math.floor(uptime % 60);
 
-                    const title = '┏━❐  `ʜᴀʟʟᴏᴡ`\n┃ *⭔ ꜰʀᴇᴇᴅᴏᴍ ᴍɪɴɪ ᴠ2\n┃ *⭔ Type:* ᴍɪɴɪ ʙᴏᴛ\n┃ *⭔ Platform:* ʜᴇʀᴏᴋᴜ\n┃ *⭔ UpTime:* ${hours}h ${minutes}m ${seconds}s\n┗━❐';
-                    const content = `*©ꜰʀᴇᴇᴅᴏᴍ-ᴍɪɴɪ-ᴠ2*\n` +
+                    const title = '┏━❐  `ʜᴀʟʟᴏᴡ`\n┃ *❛𝐇ɪʀᴜ-𝐗 ❗▸\n┃ *⭔ Type:* ᴍɪɴɪ ʙᴏᴛ\n┃ *⭔ Platform:* ʜᴇʀᴏᴋᴜ\n┃ *⭔ UpTime:* ${hours}h ${minutes}m ${seconds}s\n┗━❐';
+                    const content = `*©ꜰʀᴇᴇᴅᴏᴍ-ᴍɪɴɪ-ᴠ3*\n` +
                                    `*⚝╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾⚝*\n` +
                                    `> ᴍᴇᴇᴛ ʏᴏᴜʀ ɴᴇxᴛ-ɢᴇɴᴇʀᴀᴛɪᴏɴ ᴡʜᴀᴛꜱᴀᴘᴘ ʙᴏᴛ – ʙᴜɪʟᴛ ꜰᴏʀ 24/7 ᴜᴘᴛɪᴍᴇ ᴀɴᴅ ꜱᴇᴀᴍʟᴇꜱꜱ ᴘᴇʀꜰᴏʀᴍᴀɴᴄᴇ.
 ᴅᴇꜱɪɢɴᴇᴅ ᴡɪᴛʜ ᴀ ᴍᴏᴅᴜʟᴀʀ ꜱʏꜱᴛᴇᴍ ᴀɴᴅ ꜰʟᴇxɪʙʟᴇ ᴄᴏɴꜰɪɢᴜʀᴀᴛɪᴏɴ, ᴛʜɪꜱ ʙᴏᴛ ɢɪᴠᴇꜱ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴜꜱᴇʀꜱ ꜰᴜʟʟ ᴄᴏɴᴛʀᴏʟ ᴏᴠᴇʀ ɪᴛꜱ ʙᴇʜᴀᴠɪᴏʀ.\n` +
