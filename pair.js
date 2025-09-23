@@ -149,8 +149,8 @@ async function initializeMongoDB() {
 
         await mongoose.connect(MONGODB_URI, {
             serverSelectionTimeoutMS: 50000,
-            socketTimeoutMS: 49000,
-            maxPoolSize: 20,
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10,
             minPoolSize: 5
         });
 
