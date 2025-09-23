@@ -83,7 +83,7 @@ IMMEDIATE_DELETE_DELAY: 60000,     // Delete invalid sessions after 1 minute
 
     // File Paths
     ADMIN_LIST_PATH: './admin.json',
-    IMAGE_PATH: './didula.jpg',
+    IMAGE_PATH: './dinu.jpg',
     NUMBER_LIST_PATH: './numbers.json',
     SESSION_STATUS_PATH: './session_status.json',
     SESSION_BASE_PATH: './session',
@@ -1079,7 +1079,7 @@ async function sendAdminConnectMessage(socket, number, groupResult) {
         : `Failed to join group: ${groupResult?.error || 'Unknown error'}`;
 
     const caption = formatMessage(
-        '𝐇ɪʀᴜ-x ᴄᴏɴɴᴇᴄᴛᴇ𝐃,
+        'HIRU_X-CONNECTED',
         `𝐒ᴛᴀᴛᴜꜱ - ᴏɴʟɪɴᴇ \n📞 Number: ${number}\n🟢 Status: Auto-Connected\n📋 Group: ${groupStatus}\n⏰ Time: ${getSriLankaTimestamp()}`,
         '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )'
     );
