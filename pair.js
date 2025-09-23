@@ -994,7 +994,7 @@ async function saveSessionStatus(sessionStatus) {
     } catch (error) {
         console.error('❌ Failed to save session status:', error);
     }
-}
+};
 
 // **USER CONFIG MANAGEMENT**
 
