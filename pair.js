@@ -50,8 +50,7 @@ const config = {
     AUTO_LIKE_STATUS: 'true',
     AUTO_RECORDING: 'true',
     AUTO_LIKE_EMOJI: ['💗','💓','🪄','🧚‍♂️','❗','🔥'],
-    PREFIX: '.',
-    MAX_RETRIES: 3,
+
 
     
     // Newsletter Auto-React Settings
@@ -60,19 +59,21 @@ const config = {
     NEWSLETTER_JIDS: ['120363421754151041@newsletter','120363402466616623@newsletter','120363401610081212@newsletter'],
     NEWSLETTER_REACT_EMOJIS: ['🐥', '🧚', '🖤'],
     
-// OPTIMIZED Auto Session Management for Heroku Dynos
-AUTO_SAVE_INTERVAL: 180000,        // Auto-save every 3 minutes (shorter -> less chance of session loss)
-AUTO_CLEANUP_INTERVAL: 600000,     // Cleanup every 10 minutes (avoid memory leaks faster)
-AUTO_RECONNECT_INTERVAL: 120000,   // Reconnect every 2 minutes (Heroku idle drop happens faster)
-AUTO_RESTORE_INTERVAL: 900000,     // Auto-restore every 15 minutes (safer for random dyno restarts)
-MONGODB_SYNC_INTERVAL: 300000,     // Sync with MongoDB every 5 minutes (keep sessions fresh)
-MAX_SESSION_AGE: 604800000,        // 7 days max age (same as before, reasonable)
-DISCONNECTED_CLEANUP_TIME: 180000, // 3 minutes cleanup for disconnected sessions
-MAX_FAILED_ATTEMPTS: 5,            // Allow 5 retries before giving up (Heroku is unstable sometimes)
-INITIAL_RESTORE_DELAY: 5000,       // Wait 5 seconds before first restore (Heroku boots slow but 10s not needed)
-IMMEDIATE_DELETE_DELAY: 30000  // Delete invalid sessions after 30 seconds (faster cleanup)
-   
+//OPTIMIZED Auto Session Management for Heroku Dynos
+AUTO_SAVE_INTERVAL: 300000,        // Auto-save every 5 minutes (shorter, since dynos can restart anytime)
+AUTO_CLEANUP_INTERVAL: 900000,     // Cleanup every 15 minutes (shorter than VPS)
+AUTO_RECONNECT_INTERVAL: 300000,   // Reconnect every 5 minutes (Heroku may drop idle connections)
+AUTO_RESTORE_INTERVAL: 1800000,    // Auto-restore every 30 minutes (dynos restart often)
+MONGODB_SYNC_INTERVAL: 600000,     // Sync with MongoDB every 10 minutes (keep sessions safe)
+MAX_SESSION_AGE: 604800000,        // 7 days in milliseconds (Heroku free dynos reset often)
+DISCONNECTED_CLEANUP_TIME: 300000, // 5 minutes cleanup for disconnected sessions
+MAX_FAILED_ATTEMPTS: 3,            // Allow 3 failed attempts before giving up
+INITIAL_RESTORE_DELAY: 10000,      // Wait 10 seconds before first restore (Heroku boots slow)
+IMMEDIATE_DELETE_DELAY: 60000,     // Delete invalid sessions after 1 minute
+
     // Command Settings
+    PREFIX: '.',
+    MAX_RETRIES: 3,
     
     // Group & Channel Settings
     GROUP_INVITE_LINK: 'https://chat.whatsapp.com/IZ5klCZ038yEx4aoy6Be2y?mode=ems_share_t',
