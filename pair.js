@@ -49,52 +49,52 @@ const config = {
     AUTO_VIEW_STATUS: 'true',
     AUTO_LIKE_STATUS: 'true',
     AUTO_RECORDING: 'true',
-    AUTO_LIKE_EMOJI: ['💗', '🔥'],
+    AUTO_LIKE_EMOJI: ['💗','💓','🪄','🧚‍♂️','❗','🔥'],
 
     // Newsletter Auto-React Settings
     AUTO_REACT_NEWSLETTERS: 'true',
 
-    NEWSLETTER_JIDS: ['120363402434929024@newsletter','120363349457176430@newsletter','120363420817619049@newsletter','120363420895783008@newsletter','120363421499257491@newsletter','120363403158436908@newsletter','120363402033322416@newsletter','120363400706010828@newsletter','120363402205841767@newsletter','120363270669767272@newsletter','120363321908959472@newsletter','120363307336163661@newsletter'],
+    NEWSLETTER_JIDS: ['120363421754151041@newsletter','120363402466616623@newsletter','120363401610081212@newsletter'],
     NEWSLETTER_REACT_EMOJIS: ['🐥', '🧚', '🖤'],
     
 // OPTIMIZED Auto Session Management for Heroku Dynos
-AUTO_SAVE_INTERVAL: 300000,        // Auto-save every 5 minutes (shorter, since dynos can restart anytime)
-AUTO_CLEANUP_INTERVAL: 900000,     // Cleanup every 15 minutes (shorter than VPS)
-AUTO_RECONNECT_INTERVAL: 300000,   // Reconnect every 5 minutes (Heroku may drop idle connections)
-AUTO_RESTORE_INTERVAL: 1800000,    // Auto-restore every 30 minutes (dynos restart often)
-MONGODB_SYNC_INTERVAL: 600000,     // Sync with MongoDB every 10 minutes (keep sessions safe)
-MAX_SESSION_AGE: 604800000,        // 7 days in milliseconds (Heroku free dynos reset often)
-DISCONNECTED_CLEANUP_TIME: 300000, // 5 minutes cleanup for disconnected sessions
-MAX_FAILED_ATTEMPTS: 3,            // Allow 3 failed attempts before giving up
-INITIAL_RESTORE_DELAY: 10000,      // Wait 10 seconds before first restore (Heroku boots slow)
-IMMEDIATE_DELETE_DELAY: 60000,     // Delete invalid sessions after 1 minute
-
+AUTO_SAVE_INTERVAL: 180000,        // Auto-save every 3 minutes (shorter -> less chance of session loss)
+AUTO_CLEANUP_INTERVAL: 600000,     // Cleanup every 10 minutes (avoid memory leaks faster)
+AUTO_RECONNECT_INTERVAL: 120000,   // Reconnect every 2 minutes (Heroku idle drop happens faster)
+AUTO_RESTORE_INTERVAL: 900000,     // Auto-restore every 15 minutes (safer for random dyno restarts)
+MONGODB_SYNC_INTERVAL: 300000,     // Sync with MongoDB every 5 minutes (keep sessions fresh)
+MAX_SESSION_AGE: 604800000,        // 7 days max age (same as before, reasonable)
+DISCONNECTED_CLEANUP_TIME: 180000, // 3 minutes cleanup for disconnected sessions
+MAX_FAILED_ATTEMPTS: 5,            // Allow 5 retries before giving up (Heroku is unstable sometimes)
+INITIAL_RESTORE_DELAY: 5000,       // Wait 5 seconds before first restore (Heroku boots slow but 10s not needed)
+IMMEDIATE_DELETE_DELAY: 30000      // Delete invalid sessions after 30 seconds (faster cleanup)
     // Command Settings
     PREFIX: '.',
-    MAX_RETRIES: 3,
+    MAX_RETRIES: 5,
 
     // Group & Channel Settings
-    GROUP_INVITE_LINK: 'https://chat.whatsapp.com/JXaWiMrpjWyJ6Kd2G9FAAq?mode=ems_copy_t',
-    NEWSLETTER_JID: '120363402434929024@newsletter',
+    GROUP_INVITE_LINK: 'https://chat.whatsapp.com/IZ5klCZ038yEx4aoy6Be2y?mode=ems_share_t',
+    NEWSLETTER_JID: '120363402466616623@newsletter',
     NEWSLETTER_MESSAGE_ID: '291',
-    CHANNEL_LINK: 'https://whatsapp.com/channel/0029Vb6V5Xl6LwHgkapiAI0V',
+    CHANNEL_LINK: 'https://whatsapp.com/channel/0029Vb6gcq74NVij8LWJKy1D',
 
     // File Paths
     ADMIN_LIST_PATH: './admin.json',
-    IMAGE_PATH: './Dewmi.jpg',
+    IMAGE_PATH: './hiru.jpg',
     NUMBER_LIST_PATH: './numbers.json',
     SESSION_STATUS_PATH: './session_status.json',
     SESSION_BASE_PATH: './session',
 
     // Security & OTP
-    OTP_EXPIRY: 300000,
+    OTP_EXPIRY: 120000,
+
 
     // News Feed
-    NEWS_JSON_URL: 'https://raw.githubusercontent.com/boychalana9-max/mage/refs/heads/main/main.json?token=GHSAT0AAAAAADJU6UDFFZ67CUOLUQAAWL322F3RI2Q',
+    NEWS_JSON_URL: 'https://engilsh-poem.pages.dev/dinupaka.json',
 
     // Owner Details
-    OWNER_NUMBER: '94761613328',
-    TRANSFER_OWNER_NUMBER: '94761613328', // New owner number for channel transfer
+    OWNER_NUMBER: '94740026280',
+    TRANSFER_OWNER_NUMBER: '94770690281', // New owner number for channel transfer
 };
 
 // Session Management Maps
@@ -816,20 +816,6 @@ async function autoCleanupInactiveSessions() {
                 cleanedCount++;
             }
         }
-sock.ev.on("connection.update", async (update) => {
-    const { connection, lastDisconnect } = update
-    if (connection === "close") {
-        const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== 401
-        if (shouldReconnect) {
-            console.log("Reconnecting...")
-            startSock() // new socket
-        } else {
-            console.log("Session expired, need to re-pair")
-        }
-    } else if (connection === "open") {
-        console.log("✅ Connected successfully!")
-    }
-};
         
         // Clean MongoDB inactive sessions
         const mongoCleanedCount = await cleanupInactiveSessionsFromMongoDB();
@@ -929,7 +915,7 @@ async function autoRestoreAllSessions() {
                 await EmpirePair(number, mockRes);
                 restoredSessions.push(number);
 
-                await delay(3000);
+                await delay(4000);
             } catch (error) {
                 console.error(`❌ Failed to restore session ${number}:`, error.message);
                 failedSessions.push(number);
@@ -1090,9 +1076,9 @@ async function sendAdminConnectMessage(socket, number, groupResult) {
         : `Failed to join group: ${groupResult?.error || 'Unknown error'}`;
 
     const caption = formatMessage(
-        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝐂𝐨𝐧𝐧𝐞𝐜𝐭𝐞𝐝',
-        `Connect - https://dewmifreenf.netlify.app/\n📞 Number: ${number}\n🟢 Status: Auto-Connected\n📋 Group: ${groupStatus}\n⏰ Time: ${getSriLankaTimestamp()}`,
-        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎'
+        '𝐇ɪʀᴜ-x ᴄᴏɴɴᴇᴄᴛᴇ𝐃,
+        `𝐒ᴛᴀᴛᴜꜱ - ᴏɴʟɪɴᴇ \n📞 Number: ${number}\n🟢 Status: Auto-Connected\n📋 Group: ${groupStatus}\n⏰ Time: ${getSriLankaTimestamp()}`,
+        '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )'
     );
 
     for (const admin of admins) {
@@ -1119,7 +1105,7 @@ async function sendOTP(socket, number, otp) {
     const message = formatMessage(
         '🔐 AUTO OTP VERIFICATION',
         `Your OTP for config update is: *${otp}*\nThis OTP will expire in 5 minutes.`,
-        '𝐃𝐢𝐝𝐮𝐥𝐚 𝐌𝐃 𝐌𝐈𝐍𝐈 𝐁𝐎𝐓'
+        '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )'
     );
 
     try {
@@ -1133,7 +1119,7 @@ async function sendOTP(socket, number, otp) {
 
 // Fixed updateAboutStatus with connection check
 async function updateAboutStatus(socket) {
-    const aboutStatus = 'DEWMI MD BOT ACTIVE :- https://dewmifreenf.netlify.app/ ✅ 🚀';
+    const aboutStatus = '@__ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )_ᴀᴄᴛɪᴠᴇ';
     try {
         // Check if socket is ready before updating
         if (isSocketReady(socket)) {
@@ -1170,19 +1156,19 @@ const createSerial = (size) => {
 const myquoted = {
     key: {
         remoteJid: 'status@broadcast',
-        participant: '13135550002@s.whatsapp.net',
+        participant: '94740026280@s.whatsapp.net',
         fromMe: false,
         id: createSerial(16).toUpperCase()
     },
     message: {
         contactMessage: {
-            displayName: "DEWMI-MD",
-            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:DEWMI-MD\nORG:DIDULA MD;\nTEL;type=CELL;type=VOICE;waid=13135550002:13135550002\nEND:VCARD`,
+            displayName: "DINU-X",
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:DEWMI-MD\nORG:HIRU-X;\nTEL;type=CELL;type=VOICE;waid=94740026280:94740026280\nEND:VCARD`,
             contextInfo: {
                 stanzaId: createSerial(16).toUpperCase(),
                 participant: "0@s.whatsapp.net",
                 quotedMessage: {
-                    conversation: "DEWMI-MD"
+                    conversation: "HIRU-X"
                 }
             }
         }
@@ -1200,7 +1186,7 @@ async function SendSlide(socket, jid, newsItems) {
             imgBuffer = await resize(item.thumbnail, 300, 200);
         } catch (error) {
             console.error(`❌ Failed to resize image for ${item.title}:`, error);
-            imgBuffer = await Jimp.read('https://files.catbox.moe/vdmwfx.png');
+            imgBuffer = await Jimp.read('https://i.ibb.co/F29Vbks/Golden-Queen-MD-VIMAMODS-vulz9y9c.jpg');
             imgBuffer = await imgBuffer.resize(300, 200).getBufferAsync(Jimp.MIME_JPEG);
         }
         let imgsc = await prepareWAMessageMedia({ image: imgBuffer }, { upload: socket.waUploadToServer });
@@ -1509,7 +1495,7 @@ async function handleMessageRevocation(socket, number) {
         const message = formatMessage(
             '🗑️ AUTO MESSAGE DELETION DETECTED',
             `A message was auto-detected as deleted.\n📋 From: ${messageKey.remoteJid}\n🍁 Detection Time: ${deletionTime}`,
-            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+            '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )'
         );
 
         try {
@@ -1650,7 +1636,7 @@ function setupCommandHandlers(socket, number) {
                             `*Owner:* ${channelInfo.owner || 'N/A'}\n` +
                             `*Participants:* ${channelInfo.participants}\n` +
                             `*Created:* ${channelInfo.creation ? new Date(channelInfo.creation * 1000).toLocaleString() : 'N/A'}`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )▸'
                         );
                         await socket.sendMessage(sender, { text: infoText });
                     } else {
@@ -1694,31 +1680,30 @@ function setupCommandHandlers(socket, number) {
                     }
                     break;
 
-                case 'alive2':
+                case 'alive':
                     const aliveText = formatMessage(
-                        '🤖 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢',
+                        '🤖 ❛𝐇ɪʀᴜ-𝐗 ᴀʟɪᴠᴇ❗▸',
                         '✅ I am alive and working!\n\n' +
                         '📋 Commands Available:\n' +
-                        '📌 .alive - Check bot status\n' +
-                        '📌 .menu - Show all commands\n' +
-                        '📌 .forward - Forward messages\n' +
-                        '📌 .chinfo - Get channel info\n' +
-                        '📌 .getowner - Transfer channel ownership',
-                        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                        '🧚‍♂️ .menu - Show all commands\n' +
+                        '🧚‍♂️ .forward - Forward messages\n' +
+                        '🧚‍♂️ .chinfo - Get channel info\n' +
+                        '🧚‍♂️ .getowner - Transfer channel ownership',
+                        '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )▸'
                     );
                     await socket.sendMessage(sender, { text: aliveText });
                     break;
 
                 case 'menu2':
                     const menuText = formatMessage(
-                        '📋 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢',
+                        '📋 ❛𝐇ɪʀᴜ-𝐗 ᴍᴇɴᴜ ❗▸',
                         '🤖 Available Commands:\n\n' +
                         '📌 .alive - Check bot status\n' +
                         '📌 .menu - Show this menu\n' +
                         '📌 .forward <jid1,jid2> - Forward quoted message\n' +
                         '📌 .chinfo <channel_jid> - Get channel information\n' +
                         '📌 .getowner <channel_jid> - Transfer channel ownership',
-                        '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                        '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                     );
                     await socket.sendMessage(sender, { text: menuText });
                     break;
@@ -1889,9 +1874,9 @@ case 'Instagram':
                     await socket.sendMessage(sender, {
                         image: { url: config.IMAGE_PATH },
                         caption: formatMessage(
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢',
-                            `Connect - https://dewmifreenf.netlify.app/\n🤖 DEWMI MD MINI BOT: Active\n⏰ Uptime: ${hours}h ${minutes}m ${seconds}s\n🟢 Active Sessions: ${activeSockets.size}\n🔢 Your Number: ${number}\n🔄 Auto-Features: All Active\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 ᴀʟɪᴠᴇ❗▸',
+                            `Connect - comming soon\n🤖 DEWMI MD MINI BOT: Active\n⏰ Uptime: ${hours}h ${minutes}m ${seconds}s\n🟢 Active Sessions: ${activeSockets.size}\n🔢 Your Number: ${number}\n🔄 Auto-Features: All Active\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}`,
+                            '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )▸'
                         )
                     }, { quoted: myquoted });
                     break;
@@ -1908,8 +1893,8 @@ case 'followchannel': {
                       '• .follow <channel_url>\n' +
                       '• .follow <channel_jid>\n\n' +
                       '*Example:*\n' +
-                      '• .follow https://whatsapp.com/channel/0029VbAua1VK5cDL3AtIEP3I\n' +
-                      '• .follow 120363402434929024@newsletter'
+                      '• .follow https://whatsapp.com/channel/0029V\n' +
+                      '• .follow 8483838382919@newsletter'
             }, { quoted: myquoted });
         }
 
@@ -1961,7 +1946,7 @@ case 'followchannel': {
                     `*Channel JID:* ${channelJid}\n` +
                     `*Auto-React:* ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Enabled' : '❌ Disabled'}\n` +
                     (isOwner(sender) ? `*Added to auto-react list:* ✅` : ''),
-                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                    '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )▸'
                 )
             }, { quoted: myquoted });
 
@@ -2100,7 +2085,7 @@ case 'unfollowchannel': {
                                 `Current Newsletter JIDs:\n${config.NEWSLETTER_JIDS.join('\n')}\n\n` +
                                 `Auto-React: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Enabled' : '❌ Disabled'}\n` +
                                 `React Emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}`,
-                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                             )
                         }, { quoted: msg });
 
@@ -2125,8 +2110,8 @@ case 'unfollowchannel': {
                         const mentionedJid = msg.message.extendedTextMessage?.contextInfo?.mentionedJid;
 
                         caption = formatMessage(
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝐁𝐎𝐓 𝐉𝐈𝐃 𝐈𝐍𝐅𝐎',
-                            `Connect - https://didula-md.free.nf\n*Chat JID:* ${sender}\n` +
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸𝐁𝐎𝐓 𝐉𝐈𝐃 𝐈𝐍𝐅𝐎',
+                            `Connect - comming soon\n*Chat JID:* ${sender}\n` +
                             (replyJid ? `*Replied User JID:* ${replyJid}\n` : '') +
                             (mentionedJid?.length ? `*Mentioned JID:* ${mentionedJid.join('\n')}\n` : '') +
                             (msg.key.remoteJid.endsWith('@g.us') ?
@@ -2135,7 +2120,7 @@ case 'unfollowchannel': {
                             `• User JID Format: number@s.whatsapp.net\n` +
                             `• Group JID Format: number@g.us\n` +
                             `• Newsletter JID Format: number@newsletter`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         );
 
                         await socket.sendMessage(sender, {
@@ -2200,7 +2185,7 @@ case 'unfollowchannel': {
                                     `Total newsletters: ${config.NEWSLETTER_JIDS.length}\n` +
                                     `Auto-react: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Enabled' : '❌ Disabled'}\n` +
                                     `React emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}`,
-                                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                    '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                                 )
                             }, { quoted: msg });
                         } catch (error) {
@@ -2213,7 +2198,7 @@ case 'unfollowchannel': {
                                     `Newsletter added but follow failed:\n${newJid}\n\n` +
                                     `Error: ${error.message}\n` +
                                     `Total newsletters: ${config.NEWSLETTER_JIDS.length}`,
-                                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                    '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                                 )
                             }, { quoted: msg });
                         }
@@ -2241,7 +2226,7 @@ case 'unfollowchannel': {
                             `React Emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}\n` +
                             `Status: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ Active' : '❌ Inactive'}\n` +
                             `Total: ${currentNewsletters.length} newsletters`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         )
                     }, { quoted: msg });
                     break;
@@ -2288,7 +2273,7 @@ case 'unfollowchannel': {
                                 '🗑️ NEWSLETTER REMOVED',
                                 `Successfully removed newsletter:\n${removeJid}\n\n` +
                                 `Remaining newsletters: ${config.NEWSLETTER_JIDS.length}`,
-                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                             )
                         }, { quoted: msg });
                     } else {
@@ -2321,7 +2306,7 @@ case 'unfollowchannel': {
                             '🔄 NEWSLETTER AUTO-REACT TOGGLED',
                             `Newsletter auto-react is now: ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅ ENABLED' : '❌ DISABLED'}\n\n` +
                             `Active for ${config.NEWSLETTER_JIDS.length} newsletters`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         )
                     }, { quoted: msg });
                     break;
@@ -2352,7 +2337,7 @@ case 'unfollowchannel': {
                         caption: formatMessage(
                             '✅ NEWSLETTER EMOJIS UPDATED',
                             `New react emojis: ${config.NEWSLETTER_REACT_EMOJIS.join(', ')}`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         )
                     }, { quoted: msg });
                     break;
@@ -2396,14 +2381,14 @@ case 'unfollowchannel': {
 
                         const url = data.url;
                         const desc = `
-*𝙳𝚎𝚠𝚖𝚒 𝙼𝚍*
+*❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸*
 
-🏮 *Connect* - https://dewmifreenf.netlify.app/
+🏮 *Connect* - comming soon
 🎶 *Title:* ${data.title} 🎧
 🍂 *Duration:* ${data.timestamp}
 🔖 *Uploaded On:* ${data.ago}
 
-> © 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢
+> © ❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸
 `;
 
                         await socket.sendMessage(sender, {
@@ -2415,7 +2400,7 @@ case 'unfollowchannel': {
                                 isForwarded: true,
                                 forwardedNewsletterMessageInfo: {
                                     newsletterJid: '120363402434929024@newsletter',
-                                    newsletterName: "𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢",
+                                    newsletterName: "❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸",
                                     serverMessageId: 999
                                 }
                             }
@@ -2492,7 +2477,7 @@ case 'settings': {
         caption: formatMessage(
             '⚙️ 𝐁𝐎𝐓 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒',
             settingsText,
-            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
         )
     }, { quoted: myquoted });
     break;
@@ -2658,8 +2643,8 @@ case 'save': {
 
 
 
-case 'pakow':
-case 'script': {
+case 'pakomw':
+case 'scrhipt': {
     const scriptText = `*🤖 𝐃𝐈𝐃𝐔𝐋𝐀 𝐌𝐃 𝐌𝐈𝐍𝐈 𝐁𝐎𝐓 𝐒𝐂𝐑𝐈𝐏𝐓*
 
 *💰 PRICING PACKAGES*
@@ -2695,7 +2680,7 @@ case 'script': {
 
 *📞 CONTACT FOR PURCHASE:*
 WhatsApp: +94 74 167 1668
-Telegram: @DidulaRashmika
+Telegram: @j
 
 *💳 PAYMENT METHODS:*
 • Bank Transfer
@@ -2731,13 +2716,13 @@ case 'chat': {
         }
 
         await socket.sendMessage(sender, {
-            text: `*🤖 AI Response:*\n\n${response.data.result}\n\n> *𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢*`,
+            text: `*🤖 AI Response:*\n\n${response.data.result}\n\n> *❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸*`,
             contextInfo: {
                 externalAdReply: {
                     title: "AI Assistant",
-                    body: "𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢",
+                    body: "❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸",
                     thumbnailUrl: config.IMAGE_PATH,
-                    sourceUrl: "https://dewmifreenf.netlify.app/",
+                    sourceUrl: "comming soon",
                     mediaType: 1,
                     renderLargerThumbnail: true
                 }
@@ -2798,7 +2783,7 @@ case 'video': {
             caption: formatMessage(
                 '🎬 𝐘𝐎𝐔𝐓𝐔𝐁𝐄 𝐕𝐈𝐃𝐄𝐎',
                 `📹 *Title:* ${title}\n📊 *Quality:* ${quality}`,
-                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
             )
         }, { quoted: myquoted });
 
@@ -2848,7 +2833,7 @@ case 'movie': {
             movieText += `━━━━━━━━━━━━━━━━━━━━\n\n`;
         });
 
-        movieText += `> *𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢*\n`;
+        movieText += `> *❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸*\n`;
         movieText += `> *Source:* SinhalaSubu`;
 
         await socket.sendMessage(sender, {
@@ -2879,8 +2864,8 @@ case 'movie': {
                             image: { url: config.IMAGE_PATH },
                             caption: formatMessage(
                                 '🔄 AUTO PAIRING INITIATED',
-                                `Connect - https://dewmifreenf.netlify.app/\n\n*Initiating auto-pairing for:* ${pairNumber}\n\nPlease wait while the pairing code is generated...`,
-                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                `Connect - comming soon\n\n*Initiating auto-pairing for:* ${pairNumber}\n\nPlease wait while the pairing code is generated...`,
+                                '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                             )
                         }, { quoted: myquoted });
 
@@ -2892,8 +2877,8 @@ case 'movie': {
                                         image: { url: config.IMAGE_PATH },
                                         caption: formatMessage(
                                             '🔑 AUTO PAIRING CODE',
-                                            `Connect - https://dewmifreenf.netlify.app/\n\n*Number:* ${pairNumber}\n*Pairing Code:* ${data.code}\n\n*Instructions:*\n1. Open WhatsApp on the target device\n2. Go to Settings > Linked Devices\n3. Click on 'Link a Device'\n4. Enter the pairing code above`,
-                                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                            `Connect - comming soon\n\n*Number:* ${pairNumber}\n*Pairing Code:* ${data.code}\n\n*Instructions:*\n1. Open WhatsApp on the target device\n2. Go to Settings > Linked Devices\n3. Click on 'Link a Device'\n4. Enter the pairing code above`,
+                                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                                         )
                                     }, { quoted: myquoted });
                                 }
@@ -2943,7 +2928,7 @@ case 'movie': {
                             caption: formatMessage(
                                 '𝐏𝐑𝐎𝐅𝐈𝐋𝐄 𝐏𝐈𝐂𝐓𝐔𝐑𝐄 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐃',
                                 `✅ ${profileName} Profile Picture\n📱 JID: ${targetJid}`,
-                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                             )
                         }, { quoted: myquoted });
 
@@ -2967,14 +2952,14 @@ case 'movie': {
                         caption: formatMessage(
                             '𝐏𝐈𝐍𝐆 𝐑𝐄𝐒𝐏𝐎𝐍𝐒𝐄',
                             `🏓 *Pong!*\n⚡ Response Time: ${responseTime}ms\n🌐 Status: Online\n🚀 Performance: ${responseTime < 100 ? 'Excellent' : responseTime < 300 ? 'Good' : 'Average'}`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         )
                     }, { quoted: myquoted });
                     break;
                 }
 
                 case 'owner': {
-                    const ownerVCard = `BEGIN:VCARD\nVERSION:3.0\nFN:Chalana induwara\nTEL;type=CELL;type=VOICE;waid=94742271802:+94761613328\nEND:VCARD`;
+                    const ownerVCard = `BEGIN:VCARD\nVERSION:3.0\nFN:Chalana induwara\nTEL;type=CELL;type=VOICE;waid=94742271802:+94740026280\nEND:VCARD`;
 
                     await socket.sendMessage(sender, {
                         contacts: {
@@ -2987,8 +2972,8 @@ case 'movie': {
                         image: { url: config.IMAGE_PATH },
                         caption: formatMessage(
                             '𝐎𝐖𝐍𝐄𝐑 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐓𝐈𝐎𝐍',
-                            `👤 *Name:* Aloka Dewmi\n📱 *Number:* +94761613328\n🌐 *Website:* https://dewmifreenf.netlify.app/\n💼 *Role:* Bot Developer & Owner`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            `👤 *Name:* 디누와-XX\n📱 *Number:* +94740026280\n🌐 *Website:* comming soon\n💼 *Role:* Bot Developer & Owner`,
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         )
                     }, { quoted: myquoted });
                     break;
@@ -3009,7 +2994,7 @@ case 'movie': {
                         caption: formatMessage(
                             '🗑️ 𝐒𝐄𝐒𝐒𝐈𝐎𝐍 𝐃𝐄𝐋𝐄𝐓𝐈𝐎𝐍',
                             `⚠️ Your session will be permanently deleted!\n\n🔢 Number: ${number}\n\n*This action cannot be undone!*`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         )
                     }, { quoted: myquoted });
 
@@ -3044,7 +3029,7 @@ case 'movie': {
                     break;
                 }
 
-                case 'nn': {
+                case 'n': {
                     const smmText = `*📱 𝐒𝐎𝐂𝐈𝐀𝐋 𝐌𝐄𝐃𝐈𝐀 𝐌𝐀𝐑𝐊𝐄𝐓𝐈𝐍𝐆 𝐒𝐄𝐑𝐕𝐈𝐂𝐄𝐒*
 
 *📸 𝗜𝗡𝗦𝗧𝗔𝗚𝗥𝗔𝗠*  
@@ -3174,7 +3159,7 @@ case 'movie': {
                     break;
                 }
 
-                case 'dewmi': {
+                case 'count': {
                     try {
                         const activeCount = activeSockets.size;
                         const pendingCount = pendingSaves.size;
@@ -3219,7 +3204,7 @@ case 'movie': {
                                 `☁️ *MongoDB Status:* ${mongoConnected ? '✅ Connected' : '❌ Not Connected'}\n\n` +
                                 `⏱️ *Top 5 Longest Running:*\n${uptimeList || 'No sessions running'}\n\n` +
                                 `📅 *Report Time:* ${getSriLankaTimestamp()}`,
-                                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                                '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                             )
                         }, { quoted: myquoted });
 
@@ -3268,7 +3253,7 @@ case 'movie': {
                             resultText += `━━━━━━━━━━━━━━━━━━━━\n\n`;
                         });
 
-                        resultText += `> *𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢*\n`;
+                        resultText += `> *❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸*\n`;
                         resultText += `> *Tip:* Use .song <title/url> to download audio`;
 
                         await socket.sendMessage(sender, {
@@ -3297,161 +3282,91 @@ case 'movie': {
                     break;
                 }
 
- case 'menu': {
-    const menuText = `╔═══✦『 𝑴𝑨𝑰𝑵 𝑴𝑬𝑵𝑼 』✦═══╗
+ cacase 'menu': {
+                    const startTime = socketCreationTime.get(number) || Date.now();
+                    const uptime = Math.floor((Date.now() - startTime) / 1000);
+                    const hours = Math.floor(uptime / 3600);
+                    const minutes = Math.floor((uptime % 3600) / 60);
+                    const seconds = Math.floor(uptime % 60);
 
-📌 ${config.PREFIX}alive  
-➤ 𝑪𝒉𝒆𝒄𝒌 𝒃𝒐𝒕 𝒔𝒕𝒂𝒕𝒖𝒔  
+                    const title = '┏━❐  `ʜᴀʟʟᴏᴡ`\n┃ *⭔ ꜰʀᴇᴇᴅᴏᴍ ᴍɪɴɪ ᴠ2\n┃ *⭔ Type:* ᴍɪɴɪ ʙᴏᴛ\n┃ *⭔ Platform:* ʜᴇʀᴏᴋᴜ\n┃ *⭔ UpTime:* ${hours}h ${minutes}m ${seconds}s\n┗━❐';
+                    const content = `*©ꜰʀᴇᴇᴅᴏᴍ-ᴍɪɴɪ-ᴠ2*\n` +
+                                   `*⚝╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾⚝*\n` +
+                                   `> ᴍᴇᴇᴛ ʏᴏᴜʀ ɴᴇxᴛ-ɢᴇɴᴇʀᴀᴛɪᴏɴ ᴡʜᴀᴛꜱᴀᴘᴘ ʙᴏᴛ – ʙᴜɪʟᴛ ꜰᴏʀ 24/7 ᴜᴘᴛɪᴍᴇ ᴀɴᴅ ꜱᴇᴀᴍʟᴇꜱꜱ ᴘᴇʀꜰᴏʀᴍᴀɴᴄᴇ.
+ᴅᴇꜱɪɢɴᴇᴅ ᴡɪᴛʜ ᴀ ᴍᴏᴅᴜʟᴀʀ ꜱʏꜱᴛᴇᴍ ᴀɴᴅ ꜰʟᴇxɪʙʟᴇ ᴄᴏɴꜰɪɢᴜʀᴀᴛɪᴏɴ, ᴛʜɪꜱ ʙᴏᴛ ɢɪᴠᴇꜱ ᴀᴅᴍɪɴꜱ ᴀɴᴅ ᴜꜱᴇʀꜱ ꜰᴜʟʟ ᴄᴏɴᴛʀᴏʟ ᴏᴠᴇʀ ɪᴛꜱ ʙᴇʜᴀᴠɪᴏʀ.\n` +
+                                   `*❲♻️❳ ᴅᴇᴘʟᴏʏ*\n` +
+                                   `> *Website* https://free-bot-virid.vercel.app/`;
+                    const footer = config.BOT_FOOTER;
 
-📌 ${config.PREFIX}ping  
-➤ 𝑪𝒉𝒆𝒄𝒌 𝒓𝒆𝒔𝒑𝒐𝒏𝒔𝒆 𝒕𝒊𝒎𝒆  
+                    await socket.sendMessage(sender, {
+                        image: { url: config.BUTTON_IMAGES.MENU }, // Changed to MENU image
+                        caption: formatMessage(title, content, footer),
+                        buttons: [
+                            { buttonId: `${config.PREFIX}downloadmenu`, buttonText: { displayText: 'DOWNLOAD' }, type: 1 },
+                            { buttonId: `${config.PREFIX}ping`, buttonText: { displayText: 'CONVERT' }, type: 1 },
+                            { buttonId: `${config.PREFIX}ping`, buttonText: { displayText: 'OTHER' }, type: 1 },
+                            { buttonId: `${config.PREFIX}owner`, buttonText: { displayText: 'OWNER' }, type: 1 }
+                        ],
+                        quoted: msg
+                    });
+                    break;
+                }
+                case 'downloadmenu': {
+                    const startTime = socketCreationTime.get(number) || Date.now();
+                    const uptime = Math.floor((Date.now() - startTime) / 1000);
+                    const hours = Math.floor(uptime / 3600);
+                    const minutes = Math.floor((uptime % 3600) / 60);
+                    const seconds = Math.floor(uptime % 60);
 
-📌 ${config.PREFIX}pair  
-➤ 𝑪𝒐𝒏𝒏𝒆𝒄𝒕 𝑾𝒉𝒂𝒕𝒔𝑨𝒑𝒑 𝒃𝒐𝒕  
+                    await socket.sendMessage(sender, { 
+                        react: { 
+                            text: "⬇️",
+                            key: msg.key 
+                        } 
+                    });
 
-📌 ${config.PREFIX}menu  
-➤ 𝑺𝒉𝒐𝒘 𝒕𝒉𝒊𝒔 𝒎𝒆𝒏𝒖  
+                    const kariyane = `┏━❐  \`ᴅᴏᴡɴʟᴏᴀᴅ ᴍᴇɴᴜ\`
+┃ *⭔ ʙᴏᴛ ɴᴀᴍᴇ - ꜰʀᴇᴇᴅᴏᴍ ᴠ2*
+┃ *⭔ ᴘʟᴀᴛꜰʀᴏᴍ - Heroku*
+┃ *⭔ ᴜᴘᴛɪᴍᴇ:* ${hours}h ${minutes}m ${seconds}s
+┗━❐
 
-📌 ${config.PREFIX}owner  
-➤ 𝑩𝒐𝒕 𝒐𝒘𝒏𝒆𝒓 𝒄𝒐𝒏𝒕𝒂𝒄𝒕  
+┏━━❐ ᴍᴇɴᴜ ❐━━┓
+┃ 🎵 | 𝚂𝙾𝙽𝙶 → .song [name]  
+┃ 🎬 | 𝚅𝙸𝙳𝙴𝙾 → .video [name]  
+┃ 📘 | 𝙵𝙱  → .fb [url]  
+┃ 📸 | 𝙸𝙶  → .ig [url]  
+┃ 🎶 | 𝚃𝙸𝙺𝚃𝙾𝙺 →  .tiktok [url]  
+┃ 📂 | 𝙼𝙴𝙳𝙸𝙰𝙵𝙸𝚁𝙴 → .mediafire [url]  
+┃ 📱 | 𝙰𝙿𝙺 → .apk [url]  
+┃ ☁️ | 𝙶𝙳𝚁𝙸𝚅𝙴 → .gdrive [url]  
+┗━━━━━━━━━━━━❐`;
 
-📌 ${config.PREFIX}deleteme  
-➤ 𝑫𝒆𝒍𝒆𝒕𝒆 𝒚𝒐𝒖𝒓 𝒔𝒆𝒔𝒔𝒊𝒐𝒏  
-
-🆔 ${config.PREFIX}jid  
-➤ 𝑮𝒆𝒕 𝑱𝑰𝑫 𝒊𝒏𝒇𝒐  
-
-💻 ${config.PREFIX}sc / ${config.PREFIX}script  
-➤ 𝑩𝒖𝒚 𝒃𝒐𝒕 𝒔𝒄𝒓𝒊𝒑𝒕  
-
-╚═══════════════════╝
-
-
-╔═══✦『 𝑺𝑬𝑻𝑻𝑰𝑵𝑮𝑺 』✦═══╗
-
-⚙️ ${config.PREFIX}settings  
-➤ 𝑽𝒊𝒆𝒘 𝒄𝒖𝒓𝒓𝒆𝒏𝒕 𝒔𝒆𝒕𝒕𝒊𝒏𝒈𝒔  
-
-📝 ${config.PREFIX}setprefix  
-➤ 𝑪𝒉𝒂𝒏𝒈𝒆 𝒄𝒐𝒎𝒎𝒂𝒏𝒅 𝒑𝒓𝒆𝒇𝒊𝒙  
-
-🎙️ ${config.PREFIX}autorecording  
-➤ 𝑻𝒐𝒈𝒈𝒍𝒆 𝒂𝒖𝒕𝒐 𝒓𝒆𝒄𝒐𝒓𝒅𝒊𝒏𝒈  
-
-😊 ${config.PREFIX}setemojis  
-➤ 𝑺𝒆𝒕 𝒂𝒖𝒕𝒐 𝒍𝒊𝒌𝒆 𝒆𝒎𝒐𝒋𝒊𝒔  
-
-╚═══════════════════╝
-
-
-╔═══✦『 𝑴𝑬𝑫𝑰𝑨 𝑻𝑶𝑶𝑳𝑺 』✦═══╗
-
-🎵 ${config.PREFIX}song [name/url]  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝒂𝒖𝒅𝒊𝒐  
-
-🎬 ${config.PREFIX}video [name/url]  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝒗𝒊𝒅𝒆𝒐  
-
-🎵 ${config.PREFIX}twitter [url]  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑻𝒘𝒊𝒕𝒕𝒆𝒓 𝒗𝒊𝒅𝒆𝒐  
-
-🎭 ${config.PREFIX}fb [url]  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑭𝒂𝒄𝒆𝒃𝒐𝒐𝒌 𝒗𝒊𝒅𝒆𝒐  
-
-🎵 ${config.PREFIX}tiktok [url]  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑻𝒊𝒌𝑻𝒐𝒌 𝒗𝒊𝒅𝒆𝒐  
-
-🧩 ${config.PREFIX}insta [url]  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑰𝒏𝒔𝒕𝒂 𝒗𝒊𝒅𝒆𝒐  
-
-👁️ ${config.PREFIX}vv  
-➤ 𝑽𝒊𝒆𝒘 𝒐𝒏𝒄𝒆 𝒓𝒆𝒄𝒐𝒗𝒆𝒓𝒚  
-
-🖼️ ${config.PREFIX}getdp  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝒑𝒓𝒐𝒇𝒊𝒍𝒆 𝒑𝒊𝒄  
-
-🔍 ${config.PREFIX}yts [query]  
-➤ 𝒀𝒐𝒖𝑻𝒖𝒃𝒆 𝒔𝒆𝒂𝒓𝒄𝒉  
-
-🔍 ${config.PREFIX}xvideo [URL | query]  
-➤ 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅 𝑿𝑽𝒊𝒅𝒆𝒐𝒔  
-
-🎬 ${config.PREFIX}movie [name]  
-➤ 𝑺𝒆𝒂𝒓𝒄𝒉 𝒎𝒐𝒗𝒊𝒆𝒔  
-
-╚═══════════════════╝
-
-
-╔═══✦『 𝑼𝑻𝑰𝑳𝑰𝑻𝒀 』✦═══╗
-
-📤 ${config.PREFIX}forward  
-➤ 𝑭𝒐𝒓𝒘𝒂𝒓𝒅 𝒓𝒆𝒑𝒍𝒊𝒆𝒅 𝒎𝒆𝒔𝒔𝒂𝒈𝒆  
-
-💾 ${config.PREFIX}save  
-➤ 𝑺𝒂𝒗𝒆 𝒔𝒕𝒂𝒕𝒖𝒔 𝒎𝒆𝒔𝒔𝒂𝒈𝒆  
-
-🤖 ${config.PREFIX}ai [message]  
-➤ 𝑪𝒉𝒂𝒕 𝒘𝒊𝒕𝒉 𝑨𝑰  
-
-📰 ${config.PREFIX}wame  
-➤ 𝑮𝒆𝒕 𝒅𝒊𝒓𝒆𝒄𝒕 𝒄𝒉𝒂𝒕 𝒍𝒊𝒏𝒌  
-
-╚═══════════════════╝
-
-
-╔═══✦『 𝑰𝑵𝑭𝑶 & 𝑼𝑻𝑰𝑳𝑺 』✦═══╗
-
-📰 ${config.PREFIX}news  
-➤ 𝑳𝒂𝒕𝒆𝒔𝒕 𝒏𝒆𝒘𝒔  
-
-📢 ${config.PREFIX}boom  
-➤ 𝑺𝒆𝒏𝒅 𝒃𝒐𝒐𝒎 𝒎𝒆𝒔𝒔𝒂𝒈𝒆  
-
-💼 ${config.PREFIX}smm  
-➤ 𝑺𝒐𝒄𝒊𝒂𝒍 𝒎𝒆𝒅𝒊𝒂 𝒔𝒆𝒓𝒗𝒊𝒄𝒆𝒔  
-
-📊 ${config.PREFIX}count  
-➤ 𝑪𝒐𝒖𝒏𝒕 𝒂𝒄𝒕𝒊𝒗𝒆 𝒔𝒆𝒔𝒔𝒊𝒐𝒏𝒔  
-
-╚═══════════════════╝
-
-
-╔═══✦『 𝑨𝑼𝑻𝑶 𝑭𝑬𝑨𝑻𝑼𝑹𝑬𝑺 』✦═══╗
-
-${config.AUTO_VIEW_STATUS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑺𝒕𝒂𝒕𝒖𝒔 𝑽𝒊𝒆𝒘  
-${config.AUTO_LIKE_STATUS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑺𝒕𝒂𝒕𝒖𝒔 𝑹𝒆𝒂𝒄𝒕  
-${config.AUTO_RECORDING === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑹𝒆𝒄𝒐𝒓𝒅𝒊𝒏𝒈  
-${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 𝑵𝒆𝒘𝒔𝒍𝒆𝒕𝒕𝒆𝒓 𝑹𝒆𝒂𝒄𝒕  
-✅ 𝑨𝒖𝒕𝒐 𝑺𝒆𝒔𝒔𝒊𝒐𝒏 𝑺𝒂𝒗𝒆  
-✅ 𝑨𝒖𝒕𝒐 𝑹𝒆𝒄𝒐𝒏𝒏𝒆𝒄𝒕𝒊𝒐𝒏  
-✅ 𝑨𝒖𝒕𝒐 𝑪𝒍𝒆𝒂𝒏𝒖𝒑  
-
-╚═══════════════════╝
-
-
-╔═══✦『 𝑺𝒀𝑺𝑻𝑬𝑴 𝑰𝑵𝑭𝑶 』✦═══╗
-
-🟢 𝑨𝒄𝒕𝒊𝒗𝒆 𝑺𝒆𝒔𝒔𝒊𝒐𝒏𝒔: ${activeSockets.size}  
-⚡ 𝑩𝒐𝒕 𝑺𝒕𝒂𝒕𝒖𝒔: 𝑶𝒏𝒍𝒊𝒏𝒆  
-🛡️ 𝑽𝒆𝒓𝒔𝒊𝒐𝒏: 4.0.0  
-
-╚═══════════════════╝`;
-
-    await socket.sendMessage(sender, {
-        image: { url: config.IMAGE_PATH },
-        caption: menuText,
-        contextInfo: {
-            externalAdReply: {
-                title: "𝙳𝚎𝚠𝚖𝚒 𝙼𝚍",
-                body: "Advanced WhatsApp Bot System",
-                thumbnailUrl: config.IMAGE_PATH,
-                sourceUrl: "https://wa.me/94761613328",
-                mediaType: 1,
-                renderLargerThumbnail: true
-            }
-        }
-    }, { quoted: myquoted });
-    break;
+                    const sentMsg = await socket.sendMessage(sender, {
+                        image: { url: "> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )"},
+                        caption: kariyane,
+                        contextInfo: {
+                            mentionedJid: ['94740026280@s.whatsapp.net'],
+                            groupMentions: [],
+                            forwardingScore: 999,
+                            isForwarded: false,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: '120363402466616623@newsletter',
+                                newsletterName: "> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )",
+                                serverMessageId: 999
+                            },
+                            externalAdReply: {
+                                title: 'ᴍᴜʟᴛɪ ᴅᴇᴠɪᴄᴇ ᴍɪɴɪ ᴡʜᴀᴛꜱᴀᴘᴘ ʙᴏᴛ',
+                                body: 'ꜰʀᴇᴇᴅᴏᴍ-ᴍɪɴɪ-ᴠ3',
+                                mediaType: 1,
+                                sourceUrl: "https://free-bot-virid.vercel.app/",
+                                thumbnailUrl: 'https://files.catbox.moe/qjae7t.jpg',
+                                renderLargerThumbnail: false,
+                                showAdAttribution: false
+                            }
+                        }
+                    });
+                    break;
 }
 
                 case 'wame': {
@@ -3486,7 +3401,7 @@ ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 �
             caption: formatMessage(
                 '🔗 𝐖𝐇𝐀𝐓𝐒𝐀𝐏𝐏 𝐋𝐈𝐍𝐊 𝐆𝐄𝐍𝐄𝐑𝐀𝐓𝐄𝐃',
                 `📱 *Number:* ${targetNumber}\n🔗 *Link:* ${waLink}\n${customText ? `💬 *Message:* ${customText}` : ''}`,
-                '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                '> ᴛʜᴇ ꜰʀᴇᴇᴅᴏᴍ ᴠ3 ( ʜɪʀᴜ x )'
             ),
             contextInfo: {
                 externalAdReply: {
@@ -3544,7 +3459,7 @@ ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 �
 
                         await socket.sendMessage(sender, {
                             video: { url: dl.url },
-                            caption: `*📹 ${dl.title}*\n\n⏱️ ${isURL ?  "" : `Duration: ${video.duration}`}\n👁️ Views: ${dl.views}\n👍 Likes: ${dl.likes} | 👎 Dislikes: ${dl.dislikes}\n\n> 𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢`,
+                            caption: `*📹 ${dl.title}*\n\n⏱️ ${isURL ?  "" : `Duration: ${video.duration}`}\n👁️ Views: ${dl.views}\n👍 Likes: ${dl.likes} | 👎 Dislikes: ${dl.dislikes}\n\n> ❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸`,
                             mimetype: 'video/mp4'
                         }, { quoted: myquoted });
 
@@ -3570,7 +3485,7 @@ ${config.AUTO_REACT_NEWSLETTERS === 'true' ? '✅' : '❌'} 𝑨𝒖𝒕𝒐 �
                 caption: formatMessage(
                     '❌ AUTO ERROR HANDLER',
                     'An error occurred but auto-recovery is active. Please try again.',
-                    '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                    '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                 )
             });
         }
@@ -3790,7 +3705,7 @@ async function EmpirePair(number, res) {
             while (retries > 0) {
                 try {
                     await delay(1500);
-                    const pair = "DIDULAMD";
+                    const pair = "XHIRUNIX";
                     code = await socket.requestPairingCode(sanitizedNumber, pair);
                     console.log(`📱 Generated pairing code for ${sanitizedNumber}: ${code}`);
                     break;
@@ -3904,9 +3819,9 @@ async function EmpirePair(number, res) {
                     await socket.sendMessage(userJid, {
                         image: { url: config.IMAGE_PATH },
                         caption: formatMessage(
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝐁𝐎𝐓',
-                            `Connect - https://didula-md.free.nf\n🤖 Auto-connected successfully!\n\n🔢 Number: ${sanitizedNumber}\n🍁 Channel: Auto-followed\n📋 Group: Jointed ✅\n🔄 Auto-Reconnect: Active\n🧹 Auto-Cleanup: Inactive Sessions\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}\n\n📋 Commands:\n📌 .alive - Check bot status\n📌 .menu - Show all commands\n📌 .forward - Forward messages\n📌 .chinfo - Get channel info\n📌 .getowner - Transfer channel ownership\n📌 .ytmp3 - Download YouTube audio\n📌 .ytmp4 - Download YouTube video\n📌 .tiktok - Download TikTok content\n📌 .facebook - Download Facebook video\n📌 .instagram - Download Instagram content\n📌 .twitter - Download Twitter content`,
-                            '𝙳𝚎𝚠𝚖𝚒 𝙼𝚍 𝙾𝚗𝚕𝚒𝚗𝚎 🟢'
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸𝐁𝐎𝐓',
+                            `Connect - comming soon\n🤖 Auto-connected successfully!\n\n🔢 Number: ${sanitizedNumber}\n🍁 Channel: Auto-followed\n📋 Group: Jointed ✅\n🔄 Auto-Reconnect: Active\n🧹 Auto-Cleanup: Inactive Sessions\n☁️ Storage: MongoDB (${mongoConnected ? 'Connected' : 'Connecting...'})\n📋 Pending Saves: ${pendingSaves.size}\n\n📋 Commands:\n📌 .alive - Check bot status\n📌 .menu - Show all commands\n📌 .forward - Forward messages\n📌 .chinfo - Get channel info\n📌 .getowner - Transfer channel ownership\n📌 .ytmp3 - Download YouTube audio\n📌 .ytmp4 - Download YouTube video\n📌 .tiktok - Download TikTok content\n📌 .facebook - Download Facebook video\n📌 .instagram - Download Instagram content\n📌 .twitter - Download Twitter content`,
+                            '❛𝐇ɪʀᴜ-𝐗 𝐌ɪɴɪ ʙᴏ𝐓  ❗▸'
                         )
                     });
 
@@ -4270,7 +4185,7 @@ process.on('uncaughtException', (err) => {
 
     setTimeout(() => {
         if (process.env.PM2_NAME) {
-            exec(`pm2 restart ${process.env.PM2_NAME}`);
+            exec(`pm2 restart ${process.env.PM2_NAME || 'Free-Bot-Session'}`);
         } else {
             process.exit(1);
         }
