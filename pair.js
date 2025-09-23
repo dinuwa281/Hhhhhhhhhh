@@ -503,6 +503,13 @@ function isOwner(sender) {
     return senderNumber === ownerNumber;
 }
 
+           async function autoStartSessions() {
+    const sessions = await mongoClient.db("whatsapp").collection("sessions").find({ status: "active" }).toArray()
+    for (let s of sessions) {
+        console.log("Restoring session:", s._id)
+        await restoreSession(s._id)
+    }
+}
 // **SESSION MANAGEMENT**
 
 function isSessionActive(number) {
@@ -809,7 +816,21 @@ async function autoCleanupInactiveSessions() {
                 cleanedCount++;
             }
         }
-
+sock.ev.on("connection.update", async (update) => {
+    const { connection, lastDisconnect } = update
+    if (connection === "close") {
+        const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== 401
+        if (shouldReconnect) {
+            console.log("Reconnecting...")
+            startSock() // new socket
+        } else {
+            console.log("Session expired, need to re-pair")
+        }
+    } else if (connection === "open") {
+        console.log("✅ Connected successfully!")
+    }
+}
+        
         // Clean MongoDB inactive sessions
         const mongoCleanedCount = await cleanupInactiveSessionsFromMongoDB();
         cleanedCount += mongoCleanedCount;
