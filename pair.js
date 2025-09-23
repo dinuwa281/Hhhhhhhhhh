@@ -829,7 +829,7 @@ sock.ev.on("connection.update", async (update) => {
     } else if (connection === "open") {
         console.log("✅ Connected successfully!")
     }
-}
+};
         
         // Clean MongoDB inactive sessions
         const mongoCleanedCount = await cleanupInactiveSessionsFromMongoDB();
