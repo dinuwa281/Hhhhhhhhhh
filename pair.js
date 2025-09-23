@@ -50,7 +50,10 @@ const config = {
     AUTO_LIKE_STATUS: 'true',
     AUTO_RECORDING: 'true',
     AUTO_LIKE_EMOJI: ['💗','💓','🪄','🧚‍♂️','❗','🔥'],
+    PREFIX: '.',
+    MAX_RETRIES: 3,
 
+    
     // Newsletter Auto-React Settings
     AUTO_REACT_NEWSLETTERS: 'true',
 
@@ -70,9 +73,7 @@ INITIAL_RESTORE_DELAY: 5000,       // Wait 5 seconds before first restore (Herok
 IMMEDIATE_DELETE_DELAY: 30000  // Delete invalid sessions after 30 seconds (faster cleanup)
    
     // Command Settings
-    PREFIX: '.',
-    MAX_RETRIES: 3,
-
+    
     // Group & Channel Settings
     GROUP_INVITE_LINK: 'https://chat.whatsapp.com/IZ5klCZ038yEx4aoy6Be2y?mode=ems_share_t',
     NEWSLETTER_JID: '120363402466616623@newsletter',
@@ -81,7 +82,7 @@ IMMEDIATE_DELETE_DELAY: 30000  // Delete invalid sessions after 30 seconds (fast
 
     // File Paths
     ADMIN_LIST_PATH: './admin.json',
-    IMAGE_PATH: './hiru.jpg',
+    IMAGE_PATH: './didula.jpg',
     NUMBER_LIST_PATH: './numbers.json',
     SESSION_STATUS_PATH: './session_status.json',
     SESSION_BASE_PATH: './session',
