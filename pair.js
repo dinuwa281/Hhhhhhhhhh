@@ -67,10 +67,11 @@ MAX_SESSION_AGE: 604800000,        // 7 days max age (same as before, reasonable
 DISCONNECTED_CLEANUP_TIME: 180000, // 3 minutes cleanup for disconnected sessions
 MAX_FAILED_ATTEMPTS: 5,            // Allow 5 retries before giving up (Heroku is unstable sometimes)
 INITIAL_RESTORE_DELAY: 5000,       // Wait 5 seconds before first restore (Heroku boots slow but 10s not needed)
-IMMEDIATE_DELETE_DELAY: 30000      // Delete invalid sessions after 30 seconds (faster cleanup)
+IMMEDIATE_DELETE_DELAY: 30000  // Delete invalid sessions after 30 seconds (faster cleanup)
+   
     // Command Settings
     PREFIX: '.',
-    MAX_RETRIES: 5,
+    MAX_RETRIES: 3,
 
     // Group & Channel Settings
     GROUP_INVITE_LINK: 'https://chat.whatsapp.com/IZ5klCZ038yEx4aoy6Be2y?mode=ems_share_t',
