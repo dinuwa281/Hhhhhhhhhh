@@ -37,7 +37,7 @@ const {
 } = require('@whiskeysockets/baileys');
 
 // MongoDB Configuration
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://boychalana9_db_user:<dewmi1023>@cluster0.bkqhvsu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://shanuka:Shanuka@cluster0.i9l2lts.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 process.env.NODE_ENV = 'production';
 process.env.PM2_NAME = 'devil-tech-md-session';
@@ -148,9 +148,9 @@ async function initializeMongoDB() {
         if (mongoConnected) return true;
 
         await mongoose.connect(MONGODB_URI, {
-            serverSelectionTimeoutMS: 30000,
-            socketTimeoutMS: 45000,
-            maxPoolSize: 10,
+            serverSelectionTimeoutMS: 50000,
+            socketTimeoutMS: 49000,
+            maxPoolSize: 20,
             minPoolSize: 5
         });
 
