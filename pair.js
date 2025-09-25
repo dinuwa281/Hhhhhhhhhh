@@ -12,12 +12,13 @@ const ytdl = require('ytdl-core');
 const yts = require('yt-search');
 const FileType = require('file-type');
 const AdmZip = require('adm-zip');
+const { state, saveState } = useSingleFileAuthState('./session.json');
 const mongoose = require('mongoose');
 
 if (fs.existsSync('2nd_dev_config.env')) require('dotenv').config({ path: './2nd_dev_config.env' });
 
 const { sms } = require("./msg");
-
+const restrt = require('./ecosystem.config');
 const {
     default: makeWASocket,
     useMultiFileAuthState,
