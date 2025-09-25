@@ -52,13 +52,8 @@ const config = {
     AUTO_LIKE_EMOJI: ['💗','💓','🪄','🧚‍♂️','❗','🔥'],
 
 
-    const { state, saveState } = useSingleFileAuthState('./session.json');
+    
 
-const sock = makeWASocket({
-    auth: state
-});
-
-sock.ev.on('creds.update', saveState);
     // Newsletter Auto-React Settings
     AUTO_REACT_NEWSLETTERS: 'true',
 
