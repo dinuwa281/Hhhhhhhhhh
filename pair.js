@@ -12,7 +12,6 @@ const ytdl = require('ytdl-core');
 const yts = require('yt-search');
 const FileType = require('file-type');
 const AdmZip = require('adm-zip');
-const { state, saveState } = useSingleFileAuthState('./session.json');
 const mongoose = require('mongoose');
 
 if (fs.existsSync('2nd_dev_config.env')) require('dotenv').config({ path: './2nd_dev_config.env' });
@@ -53,7 +52,13 @@ const config = {
     AUTO_LIKE_EMOJI: ['💗','💓','🪄','🧚‍♂️','❗','🔥'],
 
 
-    
+    const { state, saveState } = useSingleFileAuthState('./session.json');
+
+const sock = makeWASocket({
+    auth: state
+});
+
+sock.ev.on('creds.update', saveState);
     // Newsletter Auto-React Settings
     AUTO_REACT_NEWSLETTERS: 'true',
 
