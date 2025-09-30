@@ -37,7 +37,7 @@ const {
 } = require('@whiskeysockets/baileys');
 
 // MongoDB Configuration
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://shanuka:Shanuka@cluster0.i9l2lts.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://shanuka:Shanuka@cluster0.i9l2lts.mongodb.net/production?retryWrites=true&w=majority&appName=Cluster0';
 
 process.env.NODE_ENV = 'production';
 process.env.PM2_NAME = 'devil-tech-md-session';
